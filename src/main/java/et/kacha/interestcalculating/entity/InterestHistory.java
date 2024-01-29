@@ -1,5 +1,6 @@
 package et.kacha.interestcalculating.entity;
 
+import et.kacha.interestcalculating.constants.InterestState;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -7,40 +8,35 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import java.util.Date;
 
-@Table(name = "products")
+import java.util.Date;
+@Table(name = "interest_history")
 @Entity
 @Getter
 @Setter
 @SuperBuilder
 @NoArgsConstructor
-public class Products {
-
+public class InterestHistory {
     @Id
-    @GeneratedValue(generator = "products_sequence", strategy = GenerationType.IDENTITY)
+    @GeneratedValue(generator = "interest_history_sequence", strategy = GenerationType.IDENTITY)
     @Column(insertable = false)
     private Integer id;
 
-    @Column(nullable = false)
-    private String name;
+    @ManyToOne
+    private Customers customer;
 
+    @ManyToOne
+    private Products product;
     @Column(nullable = false)
-    private String duration;
 
-    @Column(nullable = false)
-    private String type;
+    private double amount;
 
-    @Column(nullable = false)
-    private float rate;
-
-    @Column(nullable = false)
-    private String status;
+    @Enumerated(EnumType.STRING) // You can choose EnumType.ORDINAL for integer representation
+    private InterestState status;
 
     @CreationTimestamp
     private Date created_at_time;
 
     @UpdateTimestamp
     private Date updated_at_time;
-
 }

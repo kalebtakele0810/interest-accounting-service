@@ -7,24 +7,23 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
-
 @Getter
 @Setter
 @ToString
 @AllArgsConstructor
 @SuperBuilder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ApiResponse {
-    public ApiResponse() {
+public class InterestResponse {
+    public InterestResponse() {
         this.id = "";
-        this.responseCode = "";
-        this.responseDesc = "";
+        this.msisdn = "";
     }
 
     @JsonProperty("id")
     private String id;
-    @JsonProperty("ResponseCode")
-    private String responseCode;
-    @JsonProperty("ResponseDesc")
-    private String responseDesc;
+    @JsonProperty("msisdn")
+    private String msisdn;
+    @JsonProperty("interest_amount")
+    private int interestAmount;
 }
+

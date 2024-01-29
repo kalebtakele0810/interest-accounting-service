@@ -26,6 +26,9 @@ public class Customers {
     @Column(nullable = false)
     private String full_name;
 
+    @Column(nullable = false)
+    private String msisdn;
+
     @CreationTimestamp
     private Date created_at_time;
 
