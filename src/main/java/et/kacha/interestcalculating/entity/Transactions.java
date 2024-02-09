@@ -1,5 +1,8 @@
 package et.kacha.interestcalculating.entity;
 
+import et.kacha.interestcalculating.constants.InterestPaymentState;
+import et.kacha.interestcalculating.constants.TransactionStatus;
+import et.kacha.interestcalculating.constants.TransactionType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,7 +12,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import java.util.Date;
 
-@Table(name = "transactions")
+@Table(name = "ledgers")
 @Entity
 @Getter
 @Setter
@@ -18,25 +21,37 @@ import java.util.Date;
 public class Transactions {
 
     @Id
-    @GeneratedValue(generator = "Transactions_sequence", strategy = GenerationType.IDENTITY)
+    @GeneratedValue(generator = "ledgers_id_seq", strategy = GenerationType.IDENTITY)
     @Column(insertable = false)
     private Integer id;
 
     @Column(nullable = false)
-    private int amount;
+    private float amount;
 
     @Column(nullable = false)
-    private int balance;
+    private float balance;
+
+    @Enumerated(EnumType.STRING) // You can choose EnumType.ORDINAL for integer representation
+    private TransactionType transaction_type;
+
+    @Column(nullable = false)
+    private String txn_id;
+
+    @Column(nullable = false)
+    private String txn_ref;
 
     @ManyToOne
-    private Customers customer;
+    @JoinColumn(name = "subscription_id")
+    private Subscriptions subscriptions;
 
-    @ManyToOne
-    private Products product;
+    ///PENDING,SUCCESS,FAILED
+    @Enumerated(EnumType.STRING)
+    private TransactionStatus status;
 
     @CreationTimestamp
-    private Date created_at_time;
+    private Date created_at;
 
     @UpdateTimestamp
-    private Date updated_at_time;
+    private Date updated_at;
+
 }

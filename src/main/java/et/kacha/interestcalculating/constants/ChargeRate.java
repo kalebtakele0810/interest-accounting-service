@@ -1,6 +1,6 @@
 package et.kacha.interestcalculating.constants;
 
-public enum ProductType {
-    REGULAR,
-    TIMED;
+public enum ChargeRate {
+    FLAT,
+    PERCENTAGE;
 }

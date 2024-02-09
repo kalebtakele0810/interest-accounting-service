@@ -1,5 +1,6 @@
 package et.kacha.interestcalculating.entity;
 
+import et.kacha.interestcalculating.constants.InterestPaymentState;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,30 +11,25 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.Date;
 
-@Table(name = "customers")
+@Table(name = "interest_tax_history")
 @Entity
 @Getter
 @Setter
 @SuperBuilder
 @NoArgsConstructor
-public class Customers {
-
+public class TaxHistory {
     @Id
-    @GeneratedValue(generator = "customers_id_seq", strategy = GenerationType.IDENTITY)
+    @GeneratedValue(generator = "interest_tax_history_sequence", strategy = GenerationType.IDENTITY)
     @Column(insertable = false)
     private Integer id;
 
-    @Column(nullable = false)
-    private String firstname;
+    @ManyToOne
+    private InterestHistory interestHistory;
 
-    @Column(nullable = false)
-    private String middlename;
+    private double amount;
 
-    @Column(nullable = false)
-    private String lastname;
-
-    @Column(nullable = false)
-    private String phone;
+    @Enumerated(EnumType.STRING) // You can choose EnumType.ORDINAL for integer representation
+    private InterestPaymentState status;
 
     @CreationTimestamp
     private Date created_at;

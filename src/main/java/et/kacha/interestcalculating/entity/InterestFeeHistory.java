@@ -1,5 +1,6 @@
 package et.kacha.interestcalculating.entity;
 
+import et.kacha.interestcalculating.constants.InterestPaymentState;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,30 +11,31 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.Date;
 
-@Table(name = "customers")
+@Table(name = "interest_fee_history")
 @Entity
 @Getter
 @Setter
 @SuperBuilder
 @NoArgsConstructor
-public class Customers {
-
+public class InterestFeeHistory {
     @Id
-    @GeneratedValue(generator = "customers_id_seq", strategy = GenerationType.IDENTITY)
+    @GeneratedValue(generator = "interest_fee_history_sequence", strategy = GenerationType.IDENTITY)
     @Column(insertable = false)
     private Integer id;
 
-    @Column(nullable = false)
-    private String firstname;
+    @ManyToOne
+    @JoinColumn(name = "interest_history_id")
+    private InterestHistory interestHistory;
+
+    @ManyToOne
+    @JoinColumn(name = "charge_fees_id")
+    private ChargeFees chargeFees;
 
     @Column(nullable = false)
-    private String middlename;
+    private float amount;
 
-    @Column(nullable = false)
-    private String lastname;
-
-    @Column(nullable = false)
-    private String phone;
+    @Enumerated(EnumType.STRING)
+    private InterestPaymentState status;
 
     @CreationTimestamp
     private Date created_at;

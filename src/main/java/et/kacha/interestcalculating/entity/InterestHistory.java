@@ -1,6 +1,6 @@
 package et.kacha.interestcalculating.entity;
 
-import et.kacha.interestcalculating.constants.InterestState;
+import et.kacha.interestcalculating.constants.InterestPaymentState;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,20 +23,17 @@ public class InterestHistory {
     private Integer id;
 
     @ManyToOne
-    private Customers customer;
-
-    @ManyToOne
-    private Products product;
-    @Column(nullable = false)
+    @JoinColumn(name = "subscription_id")
+    private Subscriptions subscriptions;
 
     private double amount;
 
     @Enumerated(EnumType.STRING) // You can choose EnumType.ORDINAL for integer representation
-    private InterestState status;
+    private InterestPaymentState status;
 
     @CreationTimestamp
-    private Date created_at_time;
+    private Date created_at;
 
     @UpdateTimestamp
-    private Date updated_at_time;
+    private Date updated_at;
 }

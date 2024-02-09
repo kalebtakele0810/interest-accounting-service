@@ -1,6 +1,5 @@
 package et.kacha.interestcalculating.constants;
 
-public enum ProductType {
-    REGULAR,
-    TIMED;
+public enum ProductState {
+    ACTIVE, DISABLED;
 }

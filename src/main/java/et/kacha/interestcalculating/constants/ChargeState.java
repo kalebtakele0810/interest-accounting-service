@@ -1,6 +1,5 @@
 package et.kacha.interestcalculating.constants;
 
-public enum InterestState {
-    SAVED,
-    PAID
+public enum ChargeState {
+    ACTIVE,INACTIVE;
 }

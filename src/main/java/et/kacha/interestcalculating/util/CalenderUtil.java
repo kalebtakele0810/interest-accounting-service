@@ -1,18 +1,19 @@
 package et.kacha.interestcalculating.util;
 
+import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.Date;
 
 public class CalenderUtil {
-    public static Calendar getLastDayOfMonth(Calendar calendar) {
-        calendar.add(Calendar.MONTH, 1);
-        calendar.set(Calendar.DAY_OF_MONTH, 1);
-        calendar.add(Calendar.DATE, -1);
-        return calendar;
+    public LocalDate getLastDayOfMonth(LocalDate currentDate ) {
+        int year = currentDate.getYear();
+        int month = currentDate.getMonthValue();
+
+        // Get the first day of the next month
+        LocalDate firstDayOfNextMonth = LocalDate.of(year, month + 1, 1);
+
+        // Subtract one day to get the last day of the current month
+        return firstDayOfNextMonth.minusDays(1);
     }
 
-    public static Calendar getFirstDayOfMonth(Calendar currentDate) {
-        currentDate.set(Calendar.DAY_OF_MONTH, 1);
-        return currentDate;
-    }
 }

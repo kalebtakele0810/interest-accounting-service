@@ -18,9 +18,15 @@ import java.util.Date;
 public class Subscriptions {
 
     @Id
-    @GeneratedValue(generator = "Subscriptions_sequence", strategy = GenerationType.IDENTITY)
+    @GeneratedValue(generator = "subscriptions_id_seq", strategy = GenerationType.IDENTITY)
     @Column(insertable = false)
     private Integer id;
+
+    @Column(nullable = false)
+    private float balance;
+
+    @Column(nullable = false)
+    private String phone;
 
     @ManyToOne
     private Customers customer;
@@ -29,9 +35,9 @@ public class Subscriptions {
     private Products product;
 
     @CreationTimestamp
-    private Date created_at_time;
+    private Date created_at;
 
     @UpdateTimestamp
-    private Date updated_at_time;
+    private Date updated_at;
 
 }
