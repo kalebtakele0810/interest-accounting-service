@@ -20,7 +20,15 @@ public class TimedDepositBalanceUtility {
             if (dueDate.isEqual(LocalDate.now())) {
                 minimiumBalance = firstTransaction.getBalance();
             }
+
+            ///if any withdraws occur set the minimum balance to zero
+            for (Transactions transaction : transactionsList) {
+                if (minimiumBalance > transaction.getBalance()) {
+                    minimiumBalance = 0;
+                }
+            }
             return minimiumBalance;
+
         }
     }
 

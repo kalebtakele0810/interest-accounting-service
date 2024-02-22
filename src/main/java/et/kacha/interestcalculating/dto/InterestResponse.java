@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
+
 @Getter
 @Setter
 @ToString
@@ -21,9 +22,17 @@ public class InterestResponse {
 
     @JsonProperty("id")
     private String id;
+
     @JsonProperty("msisdn")
     private String msisdn;
+
     @JsonProperty("interest_amount")
-    private int interestAmount;
+    private double interestAmount;
+
+    @JsonProperty("tax_amount")
+    private double taxAmount;
+
+    @JsonProperty("charge_amount")
+    private double chargeAmount;
 }
 

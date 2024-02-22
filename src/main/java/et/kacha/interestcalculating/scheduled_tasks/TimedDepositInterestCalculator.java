@@ -2,7 +2,6 @@ package et.kacha.interestcalculating.scheduled_tasks;
 
 import et.kacha.interestcalculating.constants.*;
 import et.kacha.interestcalculating.entity.*;
-import et.kacha.interestcalculating.repository.InterestHistoryRepository;
 import et.kacha.interestcalculating.repository.ProductsRepository;
 import et.kacha.interestcalculating.repository.SubscriptionsRepository;
 import et.kacha.interestcalculating.repository.TransactionsRepository;
@@ -14,7 +13,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.Year;
 import java.util.List;
 import java.util.Objects;
 
@@ -32,36 +30,40 @@ public class TimedDepositInterestCalculator {
     private final InterestUtility interestUtility;
 
     //    @Scheduled(cron = "0 0 0 L * *")
-    @Scheduled(cron = "*/200 * * * * *", zone = "GMT+3")
+//    @Scheduled(cron = "*/20 * * * * *", zone = "GMT+3")
     public void searchTimeDepositProducts() {
 
-        List<Products> products = productsRepository.findByProduct_typeAndState(ProductType.TIMED, ProductState.ACTIVE);
+        log.info("Timed deposit interest processing started.");
+
+        List<Products> products = productsRepository.findByProductTypeAndState(ProductType.TIME, ProductState.ACTIVE);
 
         LocalDate currentDate = LocalDate.now();
 
         for (Products product : products) {
 
-            List<Subscriptions> subscriptions = subscriptionsRepository.findByProductId(product.getId());
+            List<Subscriptions> subscriptions = subscriptionsRepository.findByProductIdAndStatus(product.getId(),
+                    SubscriptionStatus.ACTIVE);
 
             for (Subscriptions subscription : subscriptions) {
 
                 Customers customer = subscription.getCustomer();
 
-                log.info("Calculating timed-deposit interest for customer" + customer.getPhone());
+//                log.info("Calculating timed-deposit interest for customer" + customer.getPhone());
 
                 List<Transactions> transactionsList = transactionsRepository.findByProductIdAndCustomerIdAndStatus(
                         product.getId(),
                         customer.getId(),
                         ProductState.ACTIVE,
-                        TransactionStatus.SUCCESS);
+                        TransactionStatus.SUCCESS,
+                        SubscriptionStatus.ACTIVE);
 
                 if (Objects.nonNull(transactionsList)) {
                     float minimumBalance = TimedDepositBalanceUtility.calculateMinimumBalance(transactionsList, product);
-                    interestUtility.saveInterest(currentDate, product, subscription, minimumBalance);
+                    interestUtility.saveTimedInterest(currentDate, product, subscription, minimumBalance);
+
                 }
             }
         }
+        log.info("Timed deposit interest processing ended.");
     }
-
-
 }

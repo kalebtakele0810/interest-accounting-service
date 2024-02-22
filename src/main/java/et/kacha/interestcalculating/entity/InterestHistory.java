@@ -26,14 +26,20 @@ public class InterestHistory {
     @JoinColumn(name = "subscription_id")
     private Subscriptions subscriptions;
 
+    @Column(nullable = false)
     private double amount;
 
-    @Enumerated(EnumType.STRING) // You can choose EnumType.ORDINAL for integer representation
+    @Column(nullable = false)
+    private double balance;
+
+    @Enumerated(EnumType.STRING)
     private InterestPaymentState status;
 
     @CreationTimestamp
+    @Column(nullable = false)
     private Date created_at;
 
     @UpdateTimestamp
+    @Column(nullable = false)
     private Date updated_at;
 }

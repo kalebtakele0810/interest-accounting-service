@@ -27,71 +27,27 @@ public class Products {
     @Column(nullable = false)
     private String product_name;
 
-    @Column(nullable = false)
+    @Column
     private String product_description;
 
-    @Column(nullable = false)
+    @Column
     private Integer decimal_places;
 
     @Column(nullable = false)
     private float min_deposit_amt;
 
-    @Column(nullable = false)
+    @Column
     private float max_deposit_amt;
 
-    @Column(nullable = false)
-    private float annum_interest_rate;
-
-    @Column(nullable = false)
-    private Integer term_duration;
-
-    //DAILY,MONTHLY
+    //IB,IF
     @Enumerated(EnumType.STRING)
-    private InterestCompType interest_comp_type;
-
     @Column(nullable = false)
-    private Integer interest_posting_period;
-
-    //MIN_BALANCE,AVERAGE
-    @Enumerated(EnumType.STRING)
-    private InterestCalculatedUsing interest_calculated_using;
+    private InterestType interest_type;
 
     @Column(nullable = false)
     private float min_opening_balance;
 
-    @Column(nullable = false)
     private float max_saving_limit;
-
-    @Column(nullable = false)
-    private Integer min_deposit_term;
-
-    @Column(nullable = false)
-    private Integer max_deposit_term;
-
-    @Column(nullable = true)
-    private Boolean is_tax_available;
-
-    //FLAT,PERCENTAGE
-    @Enumerated(EnumType.STRING)
-    private ChargeRate tax_fee_type;
-
-    @Column(nullable = false)
-    private float tax_fee_amount;
-
-    @Column(nullable = false)
-    private float min_interest_bearing_amt;
-
-    //REGULAR,TIME
-    @Enumerated(EnumType.STRING)
-    private ProductType product_type;
-
-    //IB,IF
-    @Enumerated(EnumType.STRING)
-    private InterestType interest_type;
-
-    //ACTIVE,DISABLED
-    @Enumerated(EnumType.STRING)
-    private ProductState state;
 
     @Column(nullable = false)
     private Integer days_for_inactivity;
@@ -100,12 +56,63 @@ public class Products {
     private Integer days_for_dormancy;
 
     @Column(nullable = false)
+    private Integer term_duration;
+
+    private Integer min_deposit_term;
+
+    private Integer max_deposit_term;
+
+    private float min_interest_bearing_amt;
+
+    //DAILY,MONTHLY,CUSTOM
+    @Enumerated(EnumType.STRING)
+    private InterestCompType interest_comp_type;
+
+    @Column
+    private Integer interest_posting_period;
+
+    @Column(name = "is_ordinary")
+    private Boolean isOrdinary;
+
+    //MIN_BALANCE,AVERAGE
+    @Enumerated(EnumType.STRING)
+    private InterestCalculatedUsing interest_calculated_using;
+
+    @Column(nullable = false)
+    private float interest_rate;
+
+    //REGULAR,TIME
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ProductType product_type;
+
+    private Boolean is_tax_available;
+
+    //FLAT,PERCENTAGE
+    @Enumerated(EnumType.STRING)
+    private ChargeRate tax_fee_type;
+
+    private float tax_fee_amount;
+
+    @Column(nullable = false)
+    private Integer added_by;
+
+    @Column
+    private Integer approved_by;
+
+    //ACTIVE,DISABLED
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ProductState state;
+
     private Integer financial_institution_id;
 
     @CreationTimestamp
+    @Column(nullable = false)
     private Date created_at;
 
     @UpdateTimestamp
+    @Column(nullable = false)
     private Date updated_at;
 
 }

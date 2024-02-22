@@ -10,6 +10,7 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+
 import java.util.Date;
 
 @Table(name = "ledgers")
@@ -29,9 +30,16 @@ public class Transactions {
     private float amount;
 
     @Column(nullable = false)
+    private float bbt;
+
+    @Column(nullable = false)
+    private float bat;
+
+    @Column(nullable = false)
     private float balance;
 
-    @Enumerated(EnumType.STRING) // You can choose EnumType.ORDINAL for integer representation
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private TransactionType transaction_type;
 
     @Column(nullable = false)
@@ -41,17 +49,20 @@ public class Transactions {
     private String txn_ref;
 
     @ManyToOne
-    @JoinColumn(name = "subscription_id")
+    @JoinColumn(name = "subscription_id", nullable = false)
     private Subscriptions subscriptions;
 
     ///PENDING,SUCCESS,FAILED
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private TransactionStatus status;
 
     @CreationTimestamp
+    @Column(nullable = false)
     private Date created_at;
 
     @UpdateTimestamp
+    @Column(nullable = false)
     private Date updated_at;
 
 }

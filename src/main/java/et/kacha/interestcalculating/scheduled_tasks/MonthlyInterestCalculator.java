@@ -2,7 +2,7 @@ package et.kacha.interestcalculating.scheduled_tasks;
 
 import et.kacha.interestcalculating.constants.*;
 import et.kacha.interestcalculating.entity.*;
-import et.kacha.interestcalculating.repository.InterestHistoryRepository;
+import et.kacha.interestcalculating.repository.ChargesRepository;
 import et.kacha.interestcalculating.repository.ProductsRepository;
 import et.kacha.interestcalculating.repository.SubscriptionsRepository;
 import et.kacha.interestcalculating.repository.TransactionsRepository;
@@ -35,9 +35,11 @@ public class MonthlyInterestCalculator {
     private final InterestUtility interestUtility;
 
     //    @Scheduled(cron = "0 0 0 L * *")
-    @Scheduled(cron = "*/200 * * * * *", zone = "GMT+3")
+//    @Scheduled(cron = "*/20 * * * * *", zone = "GMT+3")
     public void searchMonthlyProducts() {
 
+        log.info("Regular Monthly interest processing started.");
+//        List<Products> products = productsRepository.findAll();
         List<Products> products = productsRepository.findByInterestCompTypeAndProductstate(
                 InterestCompType.MONTHLY,
                 ProductState.ACTIVE,
@@ -49,35 +51,38 @@ public class MonthlyInterestCalculator {
 
         for (Products product : products) {
 
-            if (currentDate.isEqual(lastDayOfMonth)) {
+//            if (currentDate.isEqual(lastDayOfMonth)) {
 
-                List<Subscriptions> subscriptions = subscriptionsRepository.findByProductId(product.getId());
+            List<Subscriptions> subscriptions = subscriptionsRepository.findByProductIdAndStatus(product.getId(), SubscriptionStatus.ACTIVE);
 
-                for (Subscriptions subscription : subscriptions) {
+            for (Subscriptions subscription : subscriptions) {
 
-                    Customers customer = subscription.getCustomer();
+                Customers customer = subscription.getCustomer();
 
-                    log.info("Calculating monthly regular interest for customer" + customer.getPhone());
+//                    log.info("Calculating monthly regular interest for customer" + customer.getPhone());
 
-                    List<Transactions> transactionsList = transactionsRepository.findByProductIdAndCustomerIdAndStatus(
-                            product.getId(),
-                            customer.getId(),
-                            ProductState.ACTIVE,
-                            TransactionStatus.SUCCESS);
+                List<Transactions> transactionsList = transactionsRepository.findByProductIdAndCustomerIdAndStatus(
+                        product.getId(),
+                        customer.getId(),
+                        ProductState.ACTIVE,
+                        TransactionStatus.SUCCESS,
+                        SubscriptionStatus.ACTIVE);
 
-                    if (Objects.nonNull(transactionsList)) {
-                        float interestPayableBalance = 0;
-                        if (product.getInterest_calculated_using().equals(InterestCalculatedUsing.MIN_BALANCE)) {
-                            interestPayableBalance = MonthlyBalanceUtility.calculateMinimumBalance(transactionsList);
-                        }
-                        if (product.getInterest_calculated_using().equals(InterestCalculatedUsing.AVERAGE)) {
-                            interestPayableBalance = MonthlyBalanceUtility.calculateAverageBalance(transactionsList);
-                        }
-                        interestUtility.saveInterest(currentDate, product, subscription, interestPayableBalance);
+                if (Objects.nonNull(transactionsList)) {
+                    float interestPayableBalance = 0;
+                    if (product.getInterest_calculated_using().equals(InterestCalculatedUsing.MIN_BALANCE)) {
+                        interestPayableBalance = MonthlyBalanceUtility.calculateMinimumBalance(transactionsList);
                     }
-                }
-            }
+                    if (product.getInterest_calculated_using().equals(InterestCalculatedUsing.AVG_BALANCE)) {
+                        interestPayableBalance = MonthlyBalanceUtility.calculateAverageBalance(transactionsList);
+                    }
 
+
+                    interestUtility.saveInterest(currentDate, product, subscription, interestPayableBalance);
+                }
+//                }
+            }
         }
+        log.info("Regular Monthly interest processing ended.");
     }
 }

@@ -1,6 +1,7 @@
 package et.kacha.interestcalculating.repository;
 
 import et.kacha.interestcalculating.constants.ProductState;
+import et.kacha.interestcalculating.constants.SubscriptionStatus;
 import et.kacha.interestcalculating.constants.TransactionStatus;
 import et.kacha.interestcalculating.entity.Transactions;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,10 +12,16 @@ import java.util.List;
 
 @Repository
 public interface TransactionsRepository extends JpaRepository<Transactions, Integer> {
-    @Query("""
+  /*  @Query("""
             select t from Transactions t
             where t.subscriptions.product.id = ?1 and t.subscriptions.customer.id = ?2 and t.subscriptions.product.state = ?3 and t.status = ?4""")
     List<Transactions> findByProductIdAndCustomerIdAndStatus(Integer id, Integer id1, ProductState state, TransactionStatus status);
+*/
+    @Query("""
+            select t from Transactions t
+            where t.subscriptions.product.id = ?1 and t.subscriptions.customer.id = ?2 and t.subscriptions.product.state = ?3 and t.status = ?4 and t.subscriptions.status = ?5""")
+    List<Transactions> findByProductIdAndCustomerIdAndStatus(Integer id, Integer id1, ProductState state, TransactionStatus status, SubscriptionStatus status1);
+
 
 }
 

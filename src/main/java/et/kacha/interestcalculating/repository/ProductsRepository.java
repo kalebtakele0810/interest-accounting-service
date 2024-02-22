@@ -13,15 +13,13 @@ import java.util.List;
 
 @Repository
 public interface ProductsRepository extends JpaRepository<Products, Integer> {
-/*
-    @Query("select p from Products p where p.interest_type = ?1 and p.state = ?2")
-    List<Products> findByInterest_typeAndProductstate(String interest_type, String productstate);
-    */
-
 
     @Query("select p from Products p where p.interest_comp_type = ?1 and p.state = ?2 and p.product_type = ?3")
     List<Products> findByInterestCompTypeAndProductstate(InterestCompType interest_comp_type, ProductState state, ProductType product_type);
 
     @Query("select p from Products p where p.product_type = ?1 and p.state = ?2")
-    List<Products> findByProduct_typeAndState(ProductType product_type, ProductState state);
+    List<Products> findByProductTypeAndState(ProductType product_type, ProductState state);
+
+    @Query("select p from Products p where p.financial_institution_id = ?1 and p.isOrdinary = ?2 and p.state = ?3")
+    List<Products> findByFinancial_institution_idAndIsOrdinaryAndState(Integer financial_institution_id, Boolean isOrdinary, ProductState state);
 }

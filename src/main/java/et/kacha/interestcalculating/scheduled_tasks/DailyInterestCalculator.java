@@ -2,18 +2,16 @@ package et.kacha.interestcalculating.scheduled_tasks;
 
 import et.kacha.interestcalculating.constants.*;
 import et.kacha.interestcalculating.entity.*;
-import et.kacha.interestcalculating.repository.InterestHistoryRepository;
 import et.kacha.interestcalculating.repository.ProductsRepository;
 import et.kacha.interestcalculating.repository.SubscriptionsRepository;
 import et.kacha.interestcalculating.repository.TransactionsRepository;
 import et.kacha.interestcalculating.util.DailyBalanceUtility;
 import et.kacha.interestcalculating.util.InterestUtility;
-import et.kacha.interestcalculating.util.MonthlyBalanceUtility;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.time.Year;
 import java.util.List;
 import java.util.Objects;
 
@@ -34,9 +32,9 @@ public class DailyInterestCalculator {
     private final InterestUtility interestUtility;
 
     //    @Scheduled(cron = "0 0 0 L * *")
-//    @Scheduled(cron = "*/200 * * * * *", zone = "GMT+3")
+//    @Scheduled(cron = "*/20 * * * * *", zone = "GMT+3")
     public void searchDailyProducts() {
-
+        log.info("Regular Daily interest processing started.");
         List<Products> products = productsRepository.findByInterestCompTypeAndProductstate(
                 InterestCompType.DAILY,
                 ProductState.ACTIVE,
@@ -44,26 +42,27 @@ public class DailyInterestCalculator {
 
         for (Products product : products) {
 
-            List<Subscriptions> subscriptions = subscriptionsRepository.findByProductId(product.getId());
+            List<Subscriptions> subscriptions = subscriptionsRepository.findByProductIdAndStatus(product.getId(), SubscriptionStatus.ACTIVE);
 
             for (Subscriptions subscription : subscriptions) {
 
                 Customers customer = subscription.getCustomer();
 
-                log.info("Calculating daily regular interest for customer" + customer.getPhone());
+//                log.info("Calculating daily regular interest for customer" + customer.getPhone());
 
                 List<Transactions> transactionsList = transactionsRepository.findByProductIdAndCustomerIdAndStatus(
                         product.getId(),
                         customer.getId(),
                         ProductState.ACTIVE,
-                        TransactionStatus.SUCCESS);
+                        TransactionStatus.SUCCESS,
+                        SubscriptionStatus.ACTIVE);
 
                 if (Objects.nonNull(transactionsList)) {
                     float interestPayableBalance = 0;
                     if (product.getInterest_calculated_using().equals(InterestCalculatedUsing.MIN_BALANCE)) {
                         interestPayableBalance = DailyBalanceUtility.calculateMinimumBalance(transactionsList);
                     }
-                    if (product.getInterest_calculated_using().equals(InterestCalculatedUsing.AVERAGE)) {
+                    if (product.getInterest_calculated_using().equals(InterestCalculatedUsing.AVG_BALANCE)) {
                         interestPayableBalance = DailyBalanceUtility.calculateAverageBalance(transactionsList);
                     }
                     interestUtility.saveDailyInterest(product, subscription, interestPayableBalance);
@@ -71,5 +70,7 @@ public class DailyInterestCalculator {
             }
 
         }
+
+        log.info("Regular Daily interest processing ended.");
     }
 }

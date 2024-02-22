@@ -27,24 +27,32 @@ public class ChargeFees {
     @Column(nullable = false)
     private float charge_amount;
 
-    @Column(nullable = false)
-    private float range_minimum;
+    @Column
+    private Float range_minimum;
 
-    @Column(nullable = false)
-    private float range_maximum;
+    @Column
+    private Float range_maximum;
 
     @ManyToOne
-    @JoinColumn(name = "charge_id")
+    @JoinColumn(name = "charge_id", nullable = false)
     private Charge charge;
+
+    @Column(nullable = false)
+    private Integer added_by;
+
+    @Column
+    private Integer approved_by;
 
     //ACTIVE,INACTIVE
     @Enumerated(EnumType.STRING)
     private ChargeState status;
 
     @CreationTimestamp
+    @Column(nullable = false)
     private Date created_at;
 
     @UpdateTimestamp
+    @Column(nullable = false)
     private Date updated_at;
 
 }

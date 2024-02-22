@@ -21,8 +21,8 @@ public class MainResponse {
         this.responseDesc = "";
     }
 
-    @JsonProperty("id")
-    private String id;
+    @JsonProperty("RequestRefId")
+    public String id;
     @JsonProperty("ResponseCode")
     private String responseCode;
     @JsonProperty("ResponseDesc")

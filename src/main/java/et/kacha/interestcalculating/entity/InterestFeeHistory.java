@@ -28,18 +28,20 @@ public class InterestFeeHistory {
     private InterestHistory interestHistory;
 
     @ManyToOne
-    @JoinColumn(name = "charge_fees_id")
-    private ChargeFees chargeFees;
+    @JoinColumn(name = "charge_id")
+    private Charge charge;
 
     @Column(nullable = false)
-    private float amount;
+    private double amount;
 
     @Enumerated(EnumType.STRING)
     private InterestPaymentState status;
 
     @CreationTimestamp
+    @Column(nullable = false)
     private Date created_at;
 
     @UpdateTimestamp
+    @Column(nullable = false)
     private Date updated_at;
 }

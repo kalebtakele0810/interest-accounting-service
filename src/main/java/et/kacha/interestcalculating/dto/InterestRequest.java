@@ -19,13 +19,15 @@ import java.util.Date;
 public class InterestRequest {
     public InterestRequest() {
         this.msisdn = "";
-        this.productId = "";
+        this.subscriptionId = "";
     }
 
     @JsonProperty("msisdn")
     private String msisdn;
-    @JsonProperty("product_id")
-    private String productId;
+
+    @JsonProperty("subscription_id")
+    private String subscriptionId;
+
     @JsonProperty("timestamp")
     private Date timestamp;
 }

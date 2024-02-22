@@ -24,16 +24,20 @@ public class TaxHistory {
     private Integer id;
 
     @ManyToOne
+    @JoinColumn(name = "interest_history_id")
     private InterestHistory interestHistory;
 
+    @Column(nullable = false)
     private double amount;
 
     @Enumerated(EnumType.STRING) // You can choose EnumType.ORDINAL for integer representation
     private InterestPaymentState status;
 
     @CreationTimestamp
+    @Column(nullable = false)
     private Date created_at;
 
     @UpdateTimestamp
+    @Column(nullable = false)
     private Date updated_at;
 }

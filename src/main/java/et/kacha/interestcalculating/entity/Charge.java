@@ -24,19 +24,22 @@ public class Charge {
     @Column(insertable = false)
     private Integer id;
 
-    @Column(nullable = false)
+    @Column
     private String charge_name;
 
     //Charge,Penality
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private ChargeType charge_type;
 
     //FLAT,PERCENTAGE
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private ChargeRate charge_calculation_type;
 
     //PERIODIC,ONETIME
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private ChargePaymentMode charge_payment_mode;
 
     //SAC, WDF, SAF, TRB, TRW, TRS, CAU
@@ -51,10 +54,18 @@ public class Charge {
     @JoinColumn(name = "saving_product_id")
     private Products products;
 
+    @Column(nullable = false)
+    private Integer added_by;
+
+    @Column
+    private Integer approved_by;
+
     @CreationTimestamp
+    @Column(nullable = false)
     private Date created_at;
 
     @UpdateTimestamp
+    @Column(nullable = false)
     private Date updated_at;
 
 }

@@ -23,21 +23,20 @@ public class Customers {
     @Column(insertable = false)
     private Integer id;
 
-    @Column(nullable = false)
     private String firstname;
 
-    @Column(nullable = false)
     private String middlename;
 
-    @Column(nullable = false)
     private String lastname;
 
     @Column(nullable = false)
     private String phone;
 
     @CreationTimestamp
+    @Column(nullable = false)
     private Date created_at;
 
     @UpdateTimestamp
+    @Column(nullable = false)
     private Date updated_at;
 }
