@@ -48,7 +48,6 @@ public class MainController {
             log.info("Interest calculation {} | for customer {}",
                     new ObjectMapper().writeValueAsString(interestBody));
 
-
             InterestRequest interestRequest = objectMapper.convertValue(interestBody.getPayload(), InterestRequest.class);
 
             log.info(new ObjectMapper().writeValueAsString(interestRequest));

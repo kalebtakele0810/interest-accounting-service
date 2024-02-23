@@ -29,9 +29,8 @@ public class InterestDeductionsCalculator {
 
     private final InterestTaxHistoryRepository interestTaxHistoryRepository;
 
-    //    @Scheduled(cron = "0 0 0 L * *")
-//    @Scheduled(cron = "*/20 * * * * *", zone = "GMT+3")
-    public void searchMonthlyProducts() {
+    @Scheduled(cron = "0 0 2 * * *", zone = "GMT+3")
+   public void searchMonthlyProducts() {
         log.info("Deduction service processing started.");
         List<InterestHistory> interestHistories = interestHistoryRepository.findByStatus(InterestPaymentState.UNPROCESSED);
         for (InterestHistory interestHistory : interestHistories) {

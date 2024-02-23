@@ -5,7 +5,6 @@ import et.kacha.interestcalculating.dto.InterestRequest;
 import et.kacha.interestcalculating.dto.InterestResponse;
 import et.kacha.interestcalculating.entity.*;
 import et.kacha.interestcalculating.repository.*;
-import et.kacha.interestcalculating.util.InterestUtility;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,9 +14,6 @@ import java.time.Year;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-
-//import java.util.Calendar;
-//import java.util.Date;
 
 @Service
 @Slf4j
@@ -39,6 +35,7 @@ public class ManualWithdrawalService {
     private final ChargesRepository chargesRepository;
 
     private final ChargeFeesRepository chargeFeesRepository;
+
     public InterestResponse calculateUnpaidInterest(InterestRequest interestRequest) {
 
         Optional<Subscriptions> subscriptions = subscriptionsRepository.findByIdAndStatus(Integer.parseInt(interestRequest.getSubscriptionId()), SubscriptionStatus.ACTIVE).stream().findAny();

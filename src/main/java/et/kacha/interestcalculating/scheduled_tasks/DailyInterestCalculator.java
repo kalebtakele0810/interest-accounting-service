@@ -1,7 +1,10 @@
 package et.kacha.interestcalculating.scheduled_tasks;
 
 import et.kacha.interestcalculating.constants.*;
-import et.kacha.interestcalculating.entity.*;
+import et.kacha.interestcalculating.entity.Customers;
+import et.kacha.interestcalculating.entity.Products;
+import et.kacha.interestcalculating.entity.Subscriptions;
+import et.kacha.interestcalculating.entity.Transactions;
 import et.kacha.interestcalculating.repository.ProductsRepository;
 import et.kacha.interestcalculating.repository.SubscriptionsRepository;
 import et.kacha.interestcalculating.repository.TransactionsRepository;
@@ -14,9 +17,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
-
-//import java.util.Calendar;
-//import java.util.Date;
 
 @Service
 @Slf4j
@@ -31,8 +31,7 @@ public class DailyInterestCalculator {
 
     private final InterestUtility interestUtility;
 
-    //    @Scheduled(cron = "0 0 0 L * *")
-//    @Scheduled(cron = "*/20 * * * * *", zone = "GMT+3")
+    @Scheduled(cron = "0 0 0 * * *", zone = "GMT+3")
     public void searchDailyProducts() {
         log.info("Regular Daily interest processing started.");
         List<Products> products = productsRepository.findByInterestCompTypeAndProductstate(
@@ -47,8 +46,6 @@ public class DailyInterestCalculator {
             for (Subscriptions subscription : subscriptions) {
 
                 Customers customer = subscription.getCustomer();
-
-//                log.info("Calculating daily regular interest for customer" + customer.getPhone());
 
                 List<Transactions> transactionsList = transactionsRepository.findByProductIdAndCustomerIdAndStatus(
                         product.getId(),

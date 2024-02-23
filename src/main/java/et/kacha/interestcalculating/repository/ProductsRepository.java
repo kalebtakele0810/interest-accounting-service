@@ -19,6 +19,8 @@ public interface ProductsRepository extends JpaRepository<Products, Integer> {
 
     @Query("select p from Products p where p.product_type = ?1 and p.state = ?2")
     List<Products> findByProductTypeAndState(ProductType product_type, ProductState state);
+    @Query("select p from Products p where p.state = ?1")
+    List<Products> findByState(ProductState state);
 
     @Query("select p from Products p where p.financial_institution_id = ?1 and p.isOrdinary = ?2 and p.state = ?3")
     List<Products> findByFinancial_institution_idAndIsOrdinaryAndState(Integer financial_institution_id, Boolean isOrdinary, ProductState state);
