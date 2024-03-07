@@ -30,8 +30,7 @@ public class DailyInterestCalculator {
     private final TransactionsRepository transactionsRepository;
 
     private final InterestUtility interestUtility;
-
-    @Scheduled(cron = "0 0 0 * * *", zone = "GMT+3")
+    @Scheduled(cron = "0 30 23 * * *", zone = "GMT+3")
     public void searchDailyProducts() {
         log.info("Regular Daily interest processing started.");
         List<Products> products = productsRepository.findByInterestCompTypeAndProductstate(
@@ -65,9 +64,7 @@ public class DailyInterestCalculator {
                     interestUtility.saveDailyInterest(product, subscription, interestPayableBalance);
                 }
             }
-
         }
-
         log.info("Regular Daily interest processing ended.");
     }
 }

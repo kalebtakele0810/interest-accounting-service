@@ -28,7 +28,7 @@ public class TaxHistory {
     private InterestHistory interestHistory;
 
     @Column(nullable = false)
-    private double amount;
+    private Double amount;
 
     @Enumerated(EnumType.STRING) // You can choose EnumType.ORDINAL for integer representation
     private InterestPaymentState status;

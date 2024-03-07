@@ -14,17 +14,10 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @SuperBuilder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class InterestResponse {
-    public InterestResponse() {
-        this.id = "";
-        this.msisdn = "";
-    }
+public class InterestBody {
 
-    @JsonProperty("id")
-    private String id;
-
-    @JsonProperty("msisdn")
-    private String msisdn;
+    @JsonProperty("phone")
+    private String phone;
 
     @JsonProperty("interest_amount")
     private double interestAmount;
@@ -34,5 +27,14 @@ public class InterestResponse {
 
     @JsonProperty("charge_amount")
     private double chargeAmount;
+
+    @JsonProperty("fi_id")
+    private String fiId;
+
+    @JsonProperty("txn_ref")
+    private String txnRef;
+
+    @JsonProperty("subscription_id")
+    private String subscriptionId;
 }
 

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import et.kacha.interestcalculating.constants.*;
 import et.kacha.interestcalculating.dto.InterestRequest;
-import et.kacha.interestcalculating.dto.InterestResponse;
+import et.kacha.interestcalculating.dto.InterestBody;
 import et.kacha.interestcalculating.dto.MainResponse;
 import et.kacha.interestcalculating.dto.MainRequest;
 import et.kacha.interestcalculating.entity.*;
@@ -41,27 +41,29 @@ public class MainController {
     private final ChargeFeesRepository chargeFeesRepository;
 
     private final ManualWithdrawalService manualWithdrawalService;
+
     @PostMapping("/process")
     MainResponse processInterestManual(@RequestBody MainRequest interestBody) {
 
         try {
-            log.info("Interest calculation {} | for customer {}",
-                    new ObjectMapper().writeValueAsString(interestBody));
+            log.info("On demand Interest calculation request | {}", new ObjectMapper().writeValueAsString(interestBody));
 
             InterestRequest interestRequest = objectMapper.convertValue(interestBody.getPayload(), InterestRequest.class);
 
-            log.info(new ObjectMapper().writeValueAsString(interestRequest));
+            MainResponse mainResponse = manualWithdrawalService.calculateUnpaidInterest(interestRequest, interestBody);
 
-            InterestResponse rsp = manualWithdrawalService.calculateUnpaidInterest(interestRequest);
+            log.info("On demand Interest calculation response | {}", new ObjectMapper().writeValueAsString(mainResponse));
 
+            return mainResponse;
+
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage());
             return MainResponse.builder()
                     .id(interestBody.getId())
-                    .responseDesc("Successfully processed!")
-                    .responseCode("0")
-                    .payload(rsp)
+                    .responseDesc("Unexpected error occur while parsing the request.")
+                    .responseCode("3")
                     .build();
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+
         }
     }
 
@@ -69,13 +71,12 @@ public class MainController {
     MainResponse generateInterestData(@RequestBody MainRequest interestBody) {
 
         try {
-            log.info("Interest calculation {} | for customer {}",
-                    new ObjectMapper().writeValueAsString(interestBody));
+            log.info("On demand Interest calculation request | {}", new ObjectMapper().writeValueAsString(interestBody));
 
             InterestRequest interestRequest = objectMapper.convertValue(interestBody.getPayload(), InterestRequest.class);
 
-            InterestResponse rsp = InterestResponse.builder()
-                    .msisdn(interestRequest.getMsisdn())
+            InterestBody rsp = InterestBody.builder()
+                    .phone(interestRequest.getMsisdn())
                     .interestAmount(0)
                     .build();
 
@@ -116,21 +117,21 @@ public class MainController {
                     .product_name("Timed deposit")
                     .product_description("Product description")
                     .decimal_places(2)
-                    .min_deposit_amt(2000)
-                    .max_deposit_amt(2000000)
+                    .min_deposit_amt(2000f)
+                    .max_deposit_amt(2000000f)
                     .interest_rate(7f)
                     .term_duration(3)
                     .interest_comp_type(InterestCompType.DAILY)
                     .interest_posting_period(3)
                     .interest_calculated_using(InterestCalculatedUsing.MIN_BALANCE)
-                    .min_opening_balance(2000)
-                    .max_saving_limit(2000000)
+                    .min_opening_balance(2000f)
+                    .max_saving_limit(2000000f)
                     .min_deposit_term(3)
                     .max_deposit_term(6)
                     .is_tax_available(true)
                     .tax_fee_type(ChargeRate.PERCENTAGE)
-                    .tax_fee_amount(3)
-                    .min_interest_bearing_amt(2000)
+                    .tax_fee_amount(3f)
+                    .min_interest_bearing_amt(2000f)
                     .product_type(ProductType.TIME)
                     .interest_type(InterestType.IB)
                     .state(ProductState.ACTIVE)
@@ -138,7 +139,7 @@ public class MainController {
                     .days_for_dormancy(365)
                     .is_tax_available(true)
                     .tax_fee_type(ChargeRate.PERCENTAGE)
-                    .tax_fee_amount(3)
+                    .tax_fee_amount(3f)
                     .financial_institution_id(1)
                     .added_by(1)
                     .created_at(new Date())
@@ -159,7 +160,7 @@ public class MainController {
                     .build());
 
             ChargeFees chargeFees = chargeFeesRepository.save(ChargeFees.builder()
-                    .charge_amount(5)
+                    .charge_amount(5f)
                     .charge(charge)
                     .approved_by(1)
                     .added_by(1)
@@ -169,7 +170,7 @@ public class MainController {
                     .build());
             Subscriptions subscriptions = subscriptionsRepository.save(Subscriptions.builder()
                     .product(product)
-                    .balance(3000)
+                    .balance(3000.0f)
                     .customer(customersRepository.findById(1).get())
                     .phone("0917498840")
                     .status(SubscriptionStatus.ACTIVE)
@@ -177,10 +178,10 @@ public class MainController {
                     .updated_at(new Date())
                     .build());
             Transactions transactions = transactionsRepository.save(Transactions.builder()
-                    .amount(2000)
-                    .balance(1000)
-                    .bat(56565)
-                    .bbt(5765)
+                    .amount(2000f)
+                    .balance(1000f)
+                    .bat(56565f)
+                    .bbt(5765f)
                     .txn_ref("GFJHGESSGFGTY")
                     .txn_id("GHGRCGHLKUSBYGYT")
                     .transaction_type(TransactionType.DEPOSIT)

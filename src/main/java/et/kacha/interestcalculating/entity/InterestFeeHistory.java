@@ -32,7 +32,7 @@ public class InterestFeeHistory {
     private Charge charge;
 
     @Column(nullable = false)
-    private double amount;
+    private Double amount;
 
     @Enumerated(EnumType.STRING)
     private InterestPaymentState status;

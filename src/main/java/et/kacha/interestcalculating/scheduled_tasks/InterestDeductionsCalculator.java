@@ -29,8 +29,8 @@ public class InterestDeductionsCalculator {
 
     private final InterestTaxHistoryRepository interestTaxHistoryRepository;
 
-    @Scheduled(cron = "0 0 2 * * *", zone = "GMT+3")
-   public void searchMonthlyProducts() {
+    @Scheduled(cron = "0 20 0 * * *", zone = "GMT+3")
+    public void searchMonthlyProducts() {
         log.info("Deduction service processing started.");
         List<InterestHistory> interestHistories = interestHistoryRepository.findByStatus(InterestPaymentState.UNPROCESSED);
         for (InterestHistory interestHistory : interestHistories) {
@@ -40,8 +40,11 @@ public class InterestDeductionsCalculator {
             double totalCharges = calculateCharges(product, baseInterest, interestHistory);
             double totalTaxes = calculateTax(product, baseInterest, interestHistory);
             double netInterest = baseInterest - totalCharges - totalTaxes;
-            interestHistory.setAmount(netInterest);
+            interestHistory.setAmount(netInterest > 0 ? netInterest : 0);
             interestHistory.setStatus(InterestPaymentState.SAVED);
+            log.info("Deduction detail for interest history id: {} | Initial base interest: {} " +
+                            "| net interest after deduction: {} | total tax deducted: {} | total charge deducted: {}",
+                    interestHistory.getId(), baseInterest, netInterest, totalTaxes, totalCharges);
             interestHistoryRepository.save(interestHistory);
         }
         log.info("Deduction service processing ended.");
@@ -62,7 +65,7 @@ public class InterestDeductionsCalculator {
             if (interestRate > 0) {
                 if (charge.getCharge_calculation_type().equals(ChargeRate.FLAT)) {
                     interestFeeHistoryRepository.save(InterestFeeHistory.builder()
-                            .amount((float) interestRate)
+                            .amount(interestRate)
                             .interestHistory(interestHistory)
                             .charge(charge)
                             .status(InterestPaymentState.SAVED)
@@ -70,7 +73,7 @@ public class InterestDeductionsCalculator {
                     chargesSum += interestRate;
                 } else if (charge.getCharge_calculation_type().equals(ChargeRate.PERCENTAGE)) {
                     interestFeeHistoryRepository.save(InterestFeeHistory.builder()
-                            .amount((float) (baseInterest * interestRate / 100))
+                            .amount((baseInterest * interestRate / 100))
                             .interestHistory(interestHistory)
                             .charge(charge)
                             .status(InterestPaymentState.SAVED)
@@ -96,7 +99,7 @@ public class InterestDeductionsCalculator {
         }
         if (chargesSum > 0) {
             interestTaxHistoryRepository.save(TaxHistory.builder()
-                    .amount((float) chargesSum)
+                    .amount(chargesSum)
                     .interestHistory(interestHistory)
                     .status(InterestPaymentState.SAVED)
                     .build());

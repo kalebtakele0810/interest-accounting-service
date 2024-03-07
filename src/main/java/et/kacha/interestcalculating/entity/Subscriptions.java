@@ -26,7 +26,7 @@ public class Subscriptions {
     private Integer id;
 
     @Column(nullable = false)
-    private float balance;
+    private Float balance;
 
     @Column(nullable = false)
     private String phone;

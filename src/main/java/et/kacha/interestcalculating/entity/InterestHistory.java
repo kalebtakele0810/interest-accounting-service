@@ -26,11 +26,14 @@ public class InterestHistory {
     @JoinColumn(name = "subscription_id")
     private Subscriptions subscriptions;
 
-    @Column(nullable = false)
-    private double amount;
+    @Column(nullable = false,name = "request_ref_id")
+    private String requestRefId;
 
     @Column(nullable = false)
-    private double balance;
+    private Double amount;
+
+    @Column(nullable = false)
+    private Double balance;
 
     @Enumerated(EnumType.STRING)
     private InterestPaymentState status;

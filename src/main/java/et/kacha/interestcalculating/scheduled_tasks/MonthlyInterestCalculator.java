@@ -32,7 +32,8 @@ public class MonthlyInterestCalculator {
     private final TransactionsRepository transactionsRepository;
 
     private final InterestUtility interestUtility;
-    @Scheduled(cron = "0 30 0 * * *", zone = "GMT+3")
+
+    @Scheduled(cron = "0 40 23 * * *", zone = "GMT+3")
     public void searchMonthlyProducts() {
 
         log.info("Regular Monthly interest processing started.");

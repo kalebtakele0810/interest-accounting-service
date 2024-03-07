@@ -12,13 +12,16 @@ import java.io.Serializable;
 @Getter
 @Setter
 @SuperBuilder
-public class MainRequest implements Serializable {
+public class MainInterestRequest implements Serializable {
 
-    @JsonProperty("RequestRefId")
-    public String id;
+    @JsonProperty("fi_id")
+    public String fi_id;
 
     @JsonProperty("CommandId")
     public String commandId;
+
+    @JsonProperty("callback-url")
+    public String callbackUrl;
 
     @JsonProperty("Payload")
     public Object payload;

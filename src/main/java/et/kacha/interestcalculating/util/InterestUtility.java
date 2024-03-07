@@ -33,10 +33,10 @@ public class InterestUtility {
 
 
             if (Objects.nonNull(product.getMin_interest_bearing_amt()) ? balance > product.getMin_interest_bearing_amt() : true) {
-
+                log.info("Monthly interest saved for:" + subscription.getCustomer().getPhone() + " base amount:" + baseInterest);
                 InterestHistory interestHistory = interestHistoryRepository.save(InterestHistory.builder()
                         .amount(baseInterest)
-                        .balance(balance)
+                        .balance((double) balance)
                         .subscriptions(subscription)
                         .status(InterestPaymentState.UNPROCESSED)
                         .build());
@@ -54,10 +54,10 @@ public class InterestUtility {
 
 
             if (Objects.nonNull(product.getMin_interest_bearing_amt()) ? balance > product.getMin_interest_bearing_amt() : true) {
-
+                log.info("Timed interest saved for:" + subscription.getCustomer().getPhone() + " base amount:" + baseInterest);
                 InterestHistory interestHistory = interestHistoryRepository.save(InterestHistory.builder()
                         .amount(baseInterest)
-                        .balance(balance)
+                        .balance((double) balance)
                         .subscriptions(subscription)
                         .status(InterestPaymentState.UNPROCESSED)
                         .build());
@@ -67,15 +67,17 @@ public class InterestUtility {
 
     public void saveDailyInterest(Products product, Subscriptions subscription, float balance) {
         if (balance > 0) {
+
             double decimalPlaces = Math.pow(10, Objects.isNull(product.getDecimal_places()) ? 2 : product.getDecimal_places());
             double interestValue = (balance *
                     (product.getInterest_rate() / decimalPlaces)) / Year.now().length();
             int interestVl = (int) (interestValue * decimalPlaces);
-
+            double baseInterest = (double) interestVl / decimalPlaces;
             if (Objects.nonNull(product.getMin_interest_bearing_amt()) ? balance > product.getMin_interest_bearing_amt() : true) {
+                log.info("Daily interest saved for:" + subscription.getCustomer().getPhone() + " base amount:" + baseInterest);
                 InterestHistory interestHistory = interestHistoryRepository.save(InterestHistory.builder()
-                        .amount((double) interestVl / decimalPlaces)
-                        .balance(balance)
+                        .amount(baseInterest)
+                        .balance((double) balance)
                         .subscriptions(subscription)
                         .status(InterestPaymentState.UNPROCESSED)
                         .build());

@@ -35,7 +35,7 @@ public class TimedDepositInterestCalculator {
 
     private final InterestUtility interestUtility;
 
-    @Scheduled(cron = "0 0 1 * * *", zone = "GMT+3")
+    @Scheduled(cron = "0 30 23 * * *", zone = "GMT+3")
     public void searchTimeDepositProducts() {
 
         log.info("Timed deposit interest processing started.");
@@ -63,7 +63,6 @@ public class TimedDepositInterestCalculator {
                 if (Objects.nonNull(transactionsList)) {
                     float minimumBalance = TimedDepositBalanceUtility.calculateMinimumBalance(transactionsList, product);
                     interestUtility.saveTimedInterest(currentDate, product, subscription, minimumBalance);
-
                 }
             }
         }

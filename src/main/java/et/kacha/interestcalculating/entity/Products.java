@@ -34,10 +34,10 @@ public class Products {
     private Integer decimal_places;
 
     @Column(nullable = false)
-    private float min_deposit_amt;
+    private Float min_deposit_amt;
 
     @Column
-    private float max_deposit_amt;
+    private Float max_deposit_amt;
 
     //IB,IF
     @Enumerated(EnumType.STRING)
@@ -45,9 +45,9 @@ public class Products {
     private InterestType interest_type;
 
     @Column(nullable = false)
-    private float min_opening_balance;
+    private Float min_opening_balance;
 
-    private float max_saving_limit;
+    private Float max_saving_limit;
 
     @Column(nullable = false)
     private Integer days_for_inactivity;
@@ -62,7 +62,7 @@ public class Products {
 
     private Integer max_deposit_term;
 
-    private float min_interest_bearing_amt;
+    private Float min_interest_bearing_amt;
 
     //DAILY,MONTHLY,CUSTOM
     @Enumerated(EnumType.STRING)
@@ -79,7 +79,7 @@ public class Products {
     private InterestCalculatedUsing interest_calculated_using;
 
     @Column(nullable = false)
-    private float interest_rate;
+    private Float interest_rate;
 
     //REGULAR,TIME
     @Enumerated(EnumType.STRING)
@@ -92,7 +92,7 @@ public class Products {
     @Enumerated(EnumType.STRING)
     private ChargeRate tax_fee_type;
 
-    private float tax_fee_amount;
+    private Float tax_fee_amount;
 
     @Column(nullable = false)
     private Integer added_by;

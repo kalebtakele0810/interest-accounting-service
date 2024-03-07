@@ -27,16 +27,16 @@ public class Transactions {
     private Integer id;
 
     @Column(nullable = false)
-    private float amount;
+    private Float amount;
 
     @Column(nullable = false)
-    private float bbt;
+    private Float bbt;
 
     @Column(nullable = false)
-    private float bat;
+    private Float bat;
 
     @Column(nullable = false)
-    private float balance;
+    private Float balance;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

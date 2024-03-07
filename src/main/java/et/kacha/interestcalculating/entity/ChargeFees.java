@@ -25,7 +25,7 @@ public class ChargeFees {
     private Integer id;
 
     @Column(nullable = false)
-    private float charge_amount;
+    private Float charge_amount;
 
     @Column
     private Float range_minimum;

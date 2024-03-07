@@ -16,7 +16,7 @@ public class TimedDepositBalanceUtility {
         } else {
             float minimiumBalance = 0;
             LocalDate transactionDate = firstTransaction.getUpdated_at().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().toLocalDate();
-            LocalDate dueDate = transactionDate.plusMonths(product.getTerm_duration());
+            LocalDate dueDate = transactionDate.plusDays(product.getTerm_duration());
             if (dueDate.isEqual(LocalDate.now())) {
                 minimiumBalance = firstTransaction.getBalance();
             }
