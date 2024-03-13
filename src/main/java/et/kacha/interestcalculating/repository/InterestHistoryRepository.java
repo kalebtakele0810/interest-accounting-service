@@ -17,4 +17,8 @@ public interface InterestHistoryRepository extends JpaRepository<InterestHistory
     @Query("select i from InterestHistory i where i.subscriptions.id = ?1 and i.status = ?2")
     List<InterestHistory> findBySubscriptionsIdAndStatus(Integer id, InterestPaymentState status);
 
+    @Query("select i from InterestHistory i where i.requestRefId = ?1 and i.status = ?2")
+    List<InterestHistory> findByRequestRefIdAndStatus(String requestRefId, InterestPaymentState status);
+
+
 }

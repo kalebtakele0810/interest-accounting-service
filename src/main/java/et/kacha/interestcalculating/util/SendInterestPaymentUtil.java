@@ -1,5 +1,6 @@
 package et.kacha.interestcalculating.util;
 
+import et.kacha.interestcalculating.dto.MainInterestRequest;
 import et.kacha.interestcalculating.dto.MainRequest;
 import et.kacha.interestcalculating.dto.MainResponse;
 import et.kacha.interestcalculating.dto.MaturityInterestResponse;
@@ -31,7 +32,7 @@ public class SendInterestPaymentUtil {
     @Value("${webservice.endpoint.api-key}")
     private String webServiceApiKey;
 
-    public String sendPaymentRequest(MainRequest paymentRequest) {
+    public String sendPaymentRequest(MainInterestRequest paymentRequest) {
         try {
             HttpsURLConnection.setDefaultHostnameVerifier(trivialHostnameVerifier);
             SSLContext sc = SSLContext.getInstance("SSL");
@@ -42,9 +43,12 @@ public class SendInterestPaymentUtil {
             headers.set("API-Key", webServiceApiKey);
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-            HttpEntity<MainRequest> requestEntity = new HttpEntity<>(paymentRequest, headers);
+            HttpEntity<MainInterestRequest> requestEntity = new HttpEntity<>(paymentRequest, headers);
 
             ResponseEntity<String> responseEntity = restTemplate.postForEntity(webServiceEndpoint, requestEntity, String.class);
+
+            log.info("Pay interest response from webservice:" + (Objects.nonNull(responseEntity.getBody()) ? responseEntity.getBody() : ""));
+
             if (Objects.nonNull(responseEntity.getBody()) && findWord(responseEntity.getBody(), "SUCCESS")) {
                 return responseEntity.getBody();
             } else {

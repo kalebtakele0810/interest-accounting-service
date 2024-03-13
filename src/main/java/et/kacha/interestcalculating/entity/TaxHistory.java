@@ -30,6 +30,9 @@ public class TaxHistory {
     @Column(nullable = false)
     private Double amount;
 
+    @Column(nullable = false)
+    private Double fee_rate;
+
     @Enumerated(EnumType.STRING) // You can choose EnumType.ORDINAL for integer representation
     private InterestPaymentState status;
 

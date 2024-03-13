@@ -34,6 +34,9 @@ public class InterestFeeHistory {
     @Column(nullable = false)
     private Double amount;
 
+    @Column(nullable = false)
+    private Double charge_rate;
+
     @Enumerated(EnumType.STRING)
     private InterestPaymentState status;
 

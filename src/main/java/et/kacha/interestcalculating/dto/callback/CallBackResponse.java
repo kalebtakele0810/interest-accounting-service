@@ -1,4 +1,4 @@
-package et.kacha.interestcalculating.dto;
+package et.kacha.interestcalculating.dto.callback;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -7,23 +7,18 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 @AllArgsConstructor
 @Getter
 @Setter
 @SuperBuilder
-public class MainInterestRequest implements Serializable {
+public class CallBackResponse implements Serializable {
 
     @JsonProperty("fi_id")
     public String fi_id;
 
-    @JsonProperty("command_id")
-    public String commandId;
-
-    @JsonProperty("callback_url")
-    public String callbackUrl;
-
-    @JsonProperty("payload")
-    public Object payload;
+    @JsonProperty("Payload")
+    public ArrayList<Payload> payload;
 
 }

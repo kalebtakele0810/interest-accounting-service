@@ -35,7 +35,8 @@ public class InterestUtility {
             if (Objects.nonNull(product.getMin_interest_bearing_amt()) ? balance > product.getMin_interest_bearing_amt() : true) {
                 log.info("Monthly interest saved for:" + subscription.getCustomer().getPhone() + " base amount:" + baseInterest);
                 InterestHistory interestHistory = interestHistoryRepository.save(InterestHistory.builder()
-                        .amount(baseInterest)
+                        .interest_before_deduction(baseInterest)
+                        .interest_rate(Double.valueOf(product.getInterest_rate()))
                         .balance((double) balance)
                         .subscriptions(subscription)
                         .status(InterestPaymentState.UNPROCESSED)
@@ -56,7 +57,8 @@ public class InterestUtility {
             if (Objects.nonNull(product.getMin_interest_bearing_amt()) ? balance > product.getMin_interest_bearing_amt() : true) {
                 log.info("Timed interest saved for:" + subscription.getCustomer().getPhone() + " base amount:" + baseInterest);
                 InterestHistory interestHistory = interestHistoryRepository.save(InterestHistory.builder()
-                        .amount(baseInterest)
+                        .interest_before_deduction(baseInterest)
+                        .interest_rate(Double.valueOf(product.getInterest_rate()))
                         .balance((double) balance)
                         .subscriptions(subscription)
                         .status(InterestPaymentState.UNPROCESSED)
@@ -76,7 +78,8 @@ public class InterestUtility {
             if (Objects.nonNull(product.getMin_interest_bearing_amt()) ? balance > product.getMin_interest_bearing_amt() : true) {
                 log.info("Daily interest saved for:" + subscription.getCustomer().getPhone() + " base amount:" + baseInterest);
                 InterestHistory interestHistory = interestHistoryRepository.save(InterestHistory.builder()
-                        .amount(baseInterest)
+                        .interest_before_deduction(baseInterest)
+                        .interest_rate(Double.valueOf(product.getInterest_rate()))
                         .balance((double) balance)
                         .subscriptions(subscription)
                         .status(InterestPaymentState.UNPROCESSED)

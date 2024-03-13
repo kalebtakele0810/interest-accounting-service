@@ -35,12 +35,12 @@ public class InterestDeductionsCalculator {
         List<InterestHistory> interestHistories = interestHistoryRepository.findByStatus(InterestPaymentState.UNPROCESSED);
         for (InterestHistory interestHistory : interestHistories) {
             Subscriptions subscription = interestHistory.getSubscriptions();
-            double baseInterest = interestHistory.getAmount();
+            double baseInterest = interestHistory.getInterest_before_deduction();
             Products product = subscription.getProduct();
             double totalCharges = calculateCharges(product, baseInterest, interestHistory);
             double totalTaxes = calculateTax(product, baseInterest, interestHistory);
             double netInterest = baseInterest - totalCharges - totalTaxes;
-            interestHistory.setAmount(netInterest > 0 ? netInterest : 0);
+            interestHistory.setInterest_after_deduction(netInterest > 0 ? netInterest : 0);
             interestHistory.setStatus(InterestPaymentState.SAVED);
             log.info("Deduction detail for interest history id: {} | Initial base interest: {} " +
                             "| net interest after deduction: {} | total tax deducted: {} | total charge deducted: {}",
@@ -66,6 +66,7 @@ public class InterestDeductionsCalculator {
                 if (charge.getCharge_calculation_type().equals(ChargeRate.FLAT)) {
                     interestFeeHistoryRepository.save(InterestFeeHistory.builder()
                             .amount(interestRate)
+                            .charge_rate(interestRate)
                             .interestHistory(interestHistory)
                             .charge(charge)
                             .status(InterestPaymentState.SAVED)
@@ -74,6 +75,7 @@ public class InterestDeductionsCalculator {
                 } else if (charge.getCharge_calculation_type().equals(ChargeRate.PERCENTAGE)) {
                     interestFeeHistoryRepository.save(InterestFeeHistory.builder()
                             .amount((baseInterest * interestRate / 100))
+                            .charge_rate(interestRate)
                             .interestHistory(interestHistory)
                             .charge(charge)
                             .status(InterestPaymentState.SAVED)
@@ -100,6 +102,7 @@ public class InterestDeductionsCalculator {
         if (chargesSum > 0) {
             interestTaxHistoryRepository.save(TaxHistory.builder()
                     .amount(chargesSum)
+                    .fee_rate(Double.valueOf(product.getTax_fee_amount()))
                     .interestHistory(interestHistory)
                     .status(InterestPaymentState.SAVED)
                     .build());

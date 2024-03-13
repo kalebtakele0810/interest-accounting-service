@@ -8,9 +8,11 @@ import et.kacha.interestcalculating.dto.InterestRequest;
 import et.kacha.interestcalculating.dto.InterestBody;
 import et.kacha.interestcalculating.dto.MainResponse;
 import et.kacha.interestcalculating.dto.MainRequest;
+import et.kacha.interestcalculating.dto.callback.CallBackResponse;
 import et.kacha.interestcalculating.entity.*;
 import et.kacha.interestcalculating.repository.*;
 import et.kacha.interestcalculating.service.ManualWithdrawalService;
+import et.kacha.interestcalculating.service.ProcessCallBackService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -42,6 +44,8 @@ public class MainController {
 
     private final ManualWithdrawalService manualWithdrawalService;
 
+    private final ProcessCallBackService processCallBackService;
+
     @PostMapping("/process")
     MainResponse processInterestManual(@RequestBody MainRequest interestBody) {
 
@@ -60,6 +64,28 @@ public class MainController {
             log.error(e.getMessage());
             return MainResponse.builder()
                     .id(interestBody.getId())
+                    .responseDesc("Unexpected error occur while parsing the request.")
+                    .responseCode("3")
+                    .build();
+
+        }
+    }
+
+    @PostMapping("/callback")
+    MainResponse processCallBack(@RequestBody CallBackResponse callBackBody) {
+
+        try {
+            log.info("Call back returned | {}", new ObjectMapper().writeValueAsString(callBackBody));
+
+            MainResponse mainResponse = processCallBackService.processInterestCallBack(callBackBody);
+
+            log.info("Call back response | {}", new ObjectMapper().writeValueAsString(mainResponse));
+
+            return mainResponse;
+
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage());
+            return MainResponse.builder()
                     .responseDesc("Unexpected error occur while parsing the request.")
                     .responseCode("3")
                     .build();

@@ -30,6 +30,7 @@ public class DailyInterestCalculator {
     private final TransactionsRepository transactionsRepository;
 
     private final InterestUtility interestUtility;
+
     @Scheduled(cron = "0 30 23 * * *", zone = "GMT+3")
     public void searchDailyProducts() {
         log.info("Regular Daily interest processing started.");

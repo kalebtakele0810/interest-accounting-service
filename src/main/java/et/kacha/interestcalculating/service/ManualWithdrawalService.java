@@ -1,8 +1,8 @@
 package et.kacha.interestcalculating.service;
 
 import et.kacha.interestcalculating.constants.*;
-import et.kacha.interestcalculating.dto.InterestRequest;
 import et.kacha.interestcalculating.dto.InterestBody;
+import et.kacha.interestcalculating.dto.InterestRequest;
 import et.kacha.interestcalculating.dto.MainRequest;
 import et.kacha.interestcalculating.dto.MainResponse;
 import et.kacha.interestcalculating.entity.*;
@@ -115,7 +115,7 @@ public class ManualWithdrawalService {
 
         for (InterestHistory interestHistory : scheduledInterests) {
 
-            netInterest += interestHistory.getAmount();
+            netInterest += interestHistory.getInterest_after_deduction();
             List<InterestFeeHistory> scheduledFees = interestFeeHistoryRepository.findByInterestHistoryIdAndStatus(interestHistory.getId(), InterestPaymentState.SAVED);
 
             for (InterestFeeHistory interestFeeHistory : scheduledFees) {
@@ -249,7 +249,8 @@ public class ManualWithdrawalService {
                             String minimumBalanceStr = df.format(minimumBalance);
 
                             InterestHistory interestHistory = interestHistoryRepository.save(InterestHistory.builder()
-                                    .amount(Double.parseDouble(baseInterestStr))
+                                    .interest_before_deduction(Double.parseDouble(baseInterestStr))
+                                    .interest_rate(Double.valueOf(ordinaryProduct.get().getInterest_rate()))
                                     .balance(Double.parseDouble(minimumBalanceStr))
                                     .subscriptions(subscription)
                                     .status(InterestPaymentState.PAID)
@@ -259,7 +260,7 @@ public class ManualWithdrawalService {
                             netCharge = calculateCharges(ordinaryProduct.get(), baseInterest, interestHistory);
                             netTax = calculateTax(ordinaryProduct.get(), baseInterest, interestHistory);
                             netInterest = baseInterest - netCharge - netTax;
-                            interestHistory.setAmount(netInterest);
+                            interestHistory.setInterest_after_deduction(netInterest);
                             if (netInterest > 0) {
                                 interestHistoryRepository.save(interestHistory);
                             }*/
@@ -318,17 +319,19 @@ public class ManualWithdrawalService {
                 if (charge.getCharge_calculation_type().equals(ChargeRate.FLAT)) {
                     interestFeeHistoryRepository.save(InterestFeeHistory.builder()
                             .amount(interestRate)
+                            .charge_rate(interestRate)
                             .interestHistory(interestHistory)
                             .charge(charge)
-                            .status(InterestPaymentState.SAVED)
+                            .status(InterestPaymentState.PAID)
                             .build());
                     chargesSum += interestRate;
                 } else if (charge.getCharge_calculation_type().equals(ChargeRate.PERCENTAGE)) {
                     interestFeeHistoryRepository.save(InterestFeeHistory.builder()
                             .amount((baseInterest * interestRate / 100))
+                            .charge_rate(interestRate)
                             .interestHistory(interestHistory)
                             .charge(charge)
-                            .status(InterestPaymentState.SAVED)
+                            .status(InterestPaymentState.PAID)
                             .build());
                     chargesSum += (baseInterest * interestRate / 100);
                 } else {
@@ -352,6 +355,7 @@ public class ManualWithdrawalService {
         if (chargesSum > 0) {
             interestTaxHistoryRepository.save(TaxHistory.builder()
                     .amount(chargesSum)
+                    .fee_rate(chargesSum)
                     .interestHistory(interestHistory)
                     .status(InterestPaymentState.SAVED)
                     .build());
