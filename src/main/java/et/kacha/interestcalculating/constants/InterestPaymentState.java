@@ -4,5 +4,6 @@ public enum InterestPaymentState {
     UNPROCESSED,
     SAVED,
     WAITING,
+    ERROR,
     PAID
 }

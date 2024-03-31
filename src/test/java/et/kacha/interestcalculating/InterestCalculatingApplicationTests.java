@@ -1,13 +1,10 @@
 package et.kacha.interestcalculating;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class InterestCalculatingApplicationTests {
+import org.junit.Test;
 
-	@Test
-	void contextLoads() {
-	}
-
+public class InterestCalculatingApplicationTests {
+    @Test
+    public void contextLoads() {
+    }
 }

@@ -57,6 +57,8 @@ public class Transactions {
     @Enumerated(EnumType.STRING)
     private TransactionStatus status;
 
+    private Boolean is_archived;
+
     @CreationTimestamp
     @Column(nullable = false)
     private Date created_at;

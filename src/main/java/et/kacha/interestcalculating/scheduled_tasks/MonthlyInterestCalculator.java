@@ -33,21 +33,23 @@ public class MonthlyInterestCalculator {
 
     private final InterestUtility interestUtility;
 
-    @Scheduled(cron = "0 40 23 * * *", zone = "GMT+3")
+    //    @Scheduled(cron = "0 40 23 * * *", zone = "GMT+3")
+    @Scheduled(cron = "0 30 0 * * *", zone = "GMT+3")
     public void searchMonthlyProducts() {
 
         log.info("Regular Monthly interest processing started.");
-//        List<Products> products = productsRepository.findAll();
         List<Products> products = productsRepository.findByInterestCompTypeAndProductstate(
                 InterestCompType.MONTHLY,
                 ProductState.ACTIVE,
                 ProductType.REGULAR);
 
-        LocalDate currentDate = LocalDate.now();
+        LocalDate currentDate = LocalDate.now().minusDays(1);
 
         LocalDate lastDayOfMonth = new CalenderUtil().getLastDayOfMonth(currentDate);
 
         for (Products product : products) {
+
+            log.info("Monthly interest processing for:" + product.getId());
 
             if (currentDate.isEqual(lastDayOfMonth)) {
 
@@ -57,12 +59,15 @@ public class MonthlyInterestCalculator {
 
                     Customers customer = subscription.getCustomer();
 
+                    log.info("Monthly interest processing for customer:" + customer.getPhone());
+
                     List<Transactions> transactionsList = transactionsRepository.findByProductIdAndCustomerIdAndStatus(
                             product.getId(),
                             customer.getId(),
                             ProductState.ACTIVE,
                             TransactionStatus.SUCCESS,
-                            SubscriptionStatus.ACTIVE);
+                            SubscriptionStatus.ACTIVE,
+                            false);
 
                     if (Objects.nonNull(transactionsList)) {
                         float interestPayableBalance = 0;
@@ -72,7 +77,7 @@ public class MonthlyInterestCalculator {
                         if (product.getInterest_calculated_using().equals(InterestCalculatedUsing.AVG_BALANCE)) {
                             interestPayableBalance = MonthlyBalanceUtility.calculateAverageBalance(transactionsList);
                         }
-
+                        log.info("Interest Payable Balance for subscription:" + subscription.getId() + " is:" + interestPayableBalance);
 
                         interestUtility.saveInterest(currentDate, product, subscription, interestPayableBalance);
                     }

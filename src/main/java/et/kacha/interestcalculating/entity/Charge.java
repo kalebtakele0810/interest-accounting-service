@@ -42,6 +42,13 @@ public class Charge {
     @Column(nullable = false)
     private ChargePaymentMode charge_payment_mode;
 
+    @Column
+    private Integer charging_period;
+
+    @ManyToOne
+    @JoinColumn(name = "action_id")
+    private Actions actions;
+
     //SAC, WDF, SAF, TRB, TRW, TRS, CAU
     @Enumerated(EnumType.STRING)
     private ChargeFor charge_for;

@@ -58,7 +58,8 @@ public class TimedDepositInterestCalculator {
                         customer.getId(),
                         ProductState.ACTIVE,
                         TransactionStatus.SUCCESS,
-                        SubscriptionStatus.ACTIVE);
+                        SubscriptionStatus.ACTIVE,
+                        false);
 
                 if (Objects.nonNull(transactionsList)) {
                     float minimumBalance = TimedDepositBalanceUtility.calculateMinimumBalance(transactionsList, product);

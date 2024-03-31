@@ -65,7 +65,7 @@ public class ProcessPaymentsScheduler {
                         .callbackUrl(interestCallbackUrl)
                         .payload(new ArrayList<InterestBody>(Arrays.asList(InterestBody.builder()
                                 .subscriptionId(String.valueOf(interestHistory.getSubscriptions().getId()))
-                                .interestAmount(interestHistory.getInterest_after_deduction())
+                                .interestAmount(interestHistory.getInterest_before_deduction())
                                 .taxAmount(taxAmount)
                                 .chargeAmount(chargeAmount)
 //                                .fiId(String.valueOf(interestHistory.getSubscriptions().getProduct().getFinancial_institution_id()))
@@ -74,32 +74,37 @@ public class ProcessPaymentsScheduler {
                                 .build())))
                         .build();
                 log.info("Sending interest payment | interest history Id " + interestHistory.getId() + " | amount "
-                        + interestHistory.getInterest_after_deduction() + " | " + new ObjectMapper().writeValueAsString(mainRequest));
+                        + interestHistory.getInterest_before_deduction() + " | " + new ObjectMapper().writeValueAsString(mainRequest));
 
                 String mainResponse = sendInterestPaymentUtil.sendPaymentRequest(mainRequest);
+//                String mainResponse = "SUCCESS";
 
                 log.info("Response of interest payment | interest history Id " + interestHistory.getId() + " | response " + interestHistory.getInterest_after_deduction()
                         + " | " + mainResponse);
-
+                InterestPaymentState interestPaymentState;
                 if (Objects.nonNull(mainResponse)) {
+                    interestPaymentState = InterestPaymentState.PAID;
+                } else {
+                    interestPaymentState = InterestPaymentState.ERROR;
+                }
 
 //                    interestHistory.setStatus(InterestPaymentState.WAITING);
-                    interestHistory.setStatus(InterestPaymentState.PAID);
-                    interestHistory.setRequestRefId(requestRefId);
-                    interestHistoryRepository.save(interestHistory);
+                interestHistory.setStatus(interestPaymentState);
+                interestHistory.setRequestRefId(requestRefId);
+                interestHistoryRepository.save(interestHistory);
 
-                    for (InterestFeeHistory fee : interestFees) {
+                for (InterestFeeHistory fee : interestFees) {
 //                        fee.setStatus(InterestPaymentState.WAITING);
-                        fee.setStatus(InterestPaymentState.PAID);
-                        interestFeeHistoryRepository.save(fee);
-                    }
-
-                    for (TaxHistory tax : interestTaxes) {
-//                        tax.setStatus(InterestPaymentState.WAITING);
-                        tax.setStatus(InterestPaymentState.PAID);
-                        interestTaxHistoryRepository.save(tax);
-                    }
+                    fee.setStatus(interestPaymentState);
+                    interestFeeHistoryRepository.save(fee);
                 }
+
+                for (TaxHistory tax : interestTaxes) {
+//                        tax.setStatus(InterestPaymentState.WAITING);
+                    tax.setStatus(interestPaymentState);
+                    interestTaxHistoryRepository.save(tax);
+                }
+
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }

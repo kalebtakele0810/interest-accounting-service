@@ -1,14 +1,12 @@
 package et.kacha.interestcalculating.service;
 
 import et.kacha.interestcalculating.constants.*;
-import et.kacha.interestcalculating.dto.InterestBody;
-import et.kacha.interestcalculating.dto.InterestRequest;
-import et.kacha.interestcalculating.dto.MainRequest;
-import et.kacha.interestcalculating.dto.MainResponse;
+import et.kacha.interestcalculating.dto.*;
 import et.kacha.interestcalculating.entity.*;
 import et.kacha.interestcalculating.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
@@ -17,6 +15,7 @@ import java.time.Year;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -39,76 +38,91 @@ public class ManualWithdrawalService {
 
     private final ChargeFeesRepository chargeFeesRepository;
 
-    public MainResponse calculateUnpaidInterest(InterestRequest interestRequest, MainRequest interestBody) {
+    @Value("${interest.callback.url}")
+    private String interestCallbackUrl;
+
+    public MainInterestRequest calculateUnpaidInterest(InterestRequest interestRequest, MainRequest interestBody, boolean isProcess) {
 
         Optional<Subscriptions> subscriptions = subscriptionsRepository.findByIdAndStatus(Integer.parseInt(interestRequest.getSubscriptionId()), SubscriptionStatus.ACTIVE).stream().findAny();
-
         if (subscriptions.isEmpty()) {
-            return MainResponse.builder()
-                    .id(interestBody.getId())
-                    .responseDesc("Active subscription can't be found.")
-                    .responseCode("1")
-                    .payload(InterestBody.builder()
-                            .phone(interestRequest.getMsisdn())
+            return MainInterestRequest.builder()
+                    .commandId("PayInterest")
+//                    .fi_id(z.valueOf(subscriptions.get().getProduct().getFinancial_institution_id()))
+                    .callbackUrl(interestCallbackUrl)
+                    .payload(Arrays.asList(InterestBody.builder()
+                            .subscriptionId(String.valueOf(interestRequest.getSubscriptionId()))
                             .interestAmount(0)
-                            .chargeAmount(0)
                             .taxAmount(0)
-                            .build())
+                            .chargeAmount(0)
+                            .txnRef(null)
+                            .phone(null)
+                            .build()))
                     .build();
         }
         Subscriptions subscription = subscriptions.get();
         Products product = subscription.getProduct();
         if (product.getProduct_type().equals(ProductType.TIME)) {
-            log.info("================" + 1 + "================");
-            return MainResponse.builder()
-                    .id(interestBody.getId())
-                    .responseDesc("Successfully processed!")
-                    .responseCode("0")
-                    .payload(calculateTimedInterest(subscription))
+            return MainInterestRequest.builder()
+                    .commandId("PayInterest")
+                    .fi_id(String.valueOf(subscriptions.get().getProduct().getFinancial_institution_id()))
+                    .callbackUrl(interestCallbackUrl)
+                    .payload(Arrays.asList(calculateTimedInterest(subscription, isProcess)))
                     .build();
+
         }
         if (product.getInterest_comp_type().equals(InterestCompType.MONTHLY)) {
-
-            return MainResponse.builder()
-                    .id(interestBody.getId())
-                    .responseDesc("Successfully processed!")
-                    .responseCode("0")
-                    .payload(InterestBody.builder()
-                            .phone(interestRequest.getMsisdn())
+            return MainInterestRequest.builder()
+                    .commandId("PayInterest")
+                    .fi_id(String.valueOf(subscriptions.get().getProduct().getFinancial_institution_id()))
+                    .callbackUrl(interestCallbackUrl)
+                    .payload(Arrays.asList(InterestBody.builder()
+                            .subscriptionId(String.valueOf(interestRequest.getSubscriptionId()))
                             .interestAmount(0)
-                            .chargeAmount(0)
                             .taxAmount(0)
-                            .fiId(String.valueOf(subscription.getProduct().getFinancial_institution_id()))
-                            .txnRef(String.valueOf(UUID.randomUUID()))
-                            .subscriptionId(String.valueOf(subscription.getId()))
-                            .build())
+                            .chargeAmount(0)
+                            .txnRef(null)
+                            .phone(null)
+                            .build()))
                     .build();
         }
         if (product.getInterest_comp_type().equals(InterestCompType.DAILY)) {
-            return MainResponse.builder()
-                    .id(interestBody.getId())
-                    .responseDesc("Successfully processed!")
-                    .responseCode("0")
-                    .payload(calculateDailyInterest(subscription))
+
+           /* return MainInterestRequest.builder()
+                    .commandId("PayInterest")
+                    .fi_id(String.valueOf(subscriptions.get().getProduct().getFinancial_institution_id()))
+                    .callbackUrl(interestCallbackUrl)
+                    .payload(Arrays.asList(calculateDailyInterest(subscription, isProcess)))
+                    .build();*/
+            return MainInterestRequest.builder()
+                    .commandId("PayInterest")
+                    .fi_id(String.valueOf(subscriptions.get().getProduct().getFinancial_institution_id()))
+                    .callbackUrl(interestCallbackUrl)
+                    .payload(Arrays.asList(InterestBody.builder()
+                            .subscriptionId(String.valueOf(interestRequest.getSubscriptionId()))
+                            .interestAmount(0)
+                            .taxAmount(0)
+                            .chargeAmount(0)
+                            .txnRef(null)
+                            .phone(null)
+                            .build()))
                     .build();
         }
-        return MainResponse.builder()
-                .id(interestBody.getId())
-                .responseDesc("Product type not recognized.")
-                .responseCode("2")
-                .payload(InterestBody.builder()
-                        .phone(interestRequest.getMsisdn())
+        return MainInterestRequest.builder()
+                .commandId("PayInterest")
+                .fi_id(String.valueOf(subscriptions.get().getProduct().getFinancial_institution_id()))
+                .callbackUrl(interestCallbackUrl)
+                .payload(Arrays.asList(InterestBody.builder()
+                        .subscriptionId(String.valueOf(interestRequest.getSubscriptionId()))
                         .interestAmount(0)
-                        .chargeAmount(0)
                         .taxAmount(0)
-                        .fiId(String.valueOf(subscription.getProduct().getFinancial_institution_id()))
-                        .txnRef(String.valueOf(UUID.randomUUID()))
-                        .subscriptionId(String.valueOf(subscription.getId()))
-                        .build())
+                        .chargeAmount(0)
+                        .txnRef(null)
+                        .phone(null)
+                        .build()))
                 .build();
     }
 
-    public InterestBody calculateDailyInterest(Subscriptions subscription) {
+    public InterestBody calculateDailyInterest(Subscriptions subscription, boolean isProcess) {
         double netInterest = 0, netTax = 0, netCharge = 0;
 
         List<InterestHistory> scheduledInterests = interestHistoryRepository.findBySubscriptionsIdAndStatus(subscription.getId(), InterestPaymentState.SAVED);
@@ -120,22 +134,26 @@ public class ManualWithdrawalService {
 
             for (InterestFeeHistory interestFeeHistory : scheduledFees) {
                 netCharge += interestFeeHistory.getAmount();
-                interestFeeHistory.setStatus(InterestPaymentState.PAID);
-                interestFeeHistoryRepository.save(interestFeeHistory);
+                if (isProcess) {
+                    interestFeeHistory.setStatus(InterestPaymentState.PAID);
+                    interestFeeHistoryRepository.save(interestFeeHistory);
+                }
             }
 
             List<TaxHistory> scheduledTaxes = interestTaxHistoryRepository.findByInterestHistoryIdAndStatus(interestHistory.getId(), InterestPaymentState.SAVED);
 
             for (TaxHistory taxHistory : scheduledTaxes) {
                 netTax += taxHistory.getAmount();
-                taxHistory.setStatus(InterestPaymentState.PAID);
-                interestTaxHistoryRepository.save(taxHistory);
+                if (isProcess) {
+                    taxHistory.setStatus(InterestPaymentState.PAID);
+                    interestTaxHistoryRepository.save(taxHistory);
+                }
             }
-
-            interestHistory.setStatus(InterestPaymentState.PAID);
-            interestHistoryRepository.save(interestHistory);
+            if (isProcess) {
+                interestHistory.setStatus(InterestPaymentState.PAID);
+                interestHistoryRepository.save(interestHistory);
+            }
         }
-
         return InterestBody.builder()
                 .phone(subscription.getPhone())
                 .interestAmount(netInterest)
@@ -148,7 +166,7 @@ public class ManualWithdrawalService {
     }
 
 
-    public InterestBody calculateTimedInterest(Subscriptions subscription) {
+    public InterestBody calculateTimedInterest(Subscriptions subscription, boolean isProcess) {
 
         double netInterest = 0, netTax = 0, netCharge = 0;
 
@@ -159,12 +177,11 @@ public class ManualWithdrawalService {
                 customer.getId(),
                 ProductState.ACTIVE,
                 TransactionStatus.SUCCESS,
-                SubscriptionStatus.ACTIVE);
-        log.info("================" + 2 + "================");
+                SubscriptionStatus.ACTIVE,
+                false);
+        transactionsList = transactionsList.stream().filter(l -> l.getUpdated_at().after(subscription.getUpdated_at())).collect(Collectors.toList());
         Transactions firstTransaction = getFirstBalance(transactionsList);
-        log.info("================" + 3 + "================");
         if (Objects.isNull(firstTransaction)) {
-            log.info("================" + 4 + "================");
             return InterestBody.builder()
                     .phone(subscription.getPhone())
                     .interestAmount(netInterest)
@@ -174,13 +191,11 @@ public class ManualWithdrawalService {
                     .txnRef(String.valueOf(UUID.randomUUID()))
                     .subscriptionId(String.valueOf(subscription.getId()))
                     .build();
-        } else {
-
+        }
+        else {
             LocalDate transactionDate = firstTransaction.getUpdated_at().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().toLocalDate();
             LocalDate dueDate = transactionDate.plusDays(subscription.getProduct().getTerm_duration());
-            log.info("================" + 4 + "================");
             if (dueDate.isBefore(LocalDate.now())) {
-                log.info("================" + 5 + "================");
                 ///Calculate remaining interest
                 return InterestBody.builder()
                         .phone(subscription.getPhone())
@@ -193,18 +208,9 @@ public class ManualWithdrawalService {
                         .build();
             }
             if (dueDate.isAfter(LocalDate.now())) {
-              /*  return InterestBody.builder()
-                        .msisdn(subscription.getPhone())
-                        .interestAmount(netInterest)
-                        .chargeAmount(netCharge)
-                        .taxAmount(netTax)
-                        .build();*/
-                log.info("================" + 5 + "================");
                 Optional<Products> ordinaryProduct = productsRepository.findByFinancial_institution_idAndIsOrdinaryAndState
                         (subscription.getProduct().getFinancial_institution_id(), true, ProductState.ACTIVE).stream().findFirst();
-                log.info("================" + 6 + "================");
                 if (ordinaryProduct.isEmpty()) {
-                    log.info("================" + 7 + "================");
                     return InterestBody.builder()
                             .phone(subscription.getPhone())
                             .interestAmount(netInterest)
@@ -214,8 +220,8 @@ public class ManualWithdrawalService {
                             .txnRef(String.valueOf(UUID.randomUUID()))
                             .subscriptionId(String.valueOf(subscription.getId()))
                             .build();
-                } else {
-                    log.info("================" + 8 + "================");
+                }
+                else {
                     float minimumBalance = firstTransaction.getBalance();
                     for (Transactions transaction : transactionsList) {
                         if (minimumBalance > transaction.getBalance()) {
@@ -230,46 +236,48 @@ public class ManualWithdrawalService {
                                     .build();
                         }
                     }
-                    log.info("================" + 9 + "================");
                     if (minimumBalance > 0) {
                         double decimalPlaces = Math.pow(10, Objects.isNull(ordinaryProduct.get().getDecimal_places()) ? 2 : ordinaryProduct.get().getDecimal_places());
-
                         double interestValue = minimumBalance *
-                                (ordinaryProduct.get().getInterest_rate() / decimalPlaces) *
+                                (ordinaryProduct.get().getInterest_rate() / 100) *
                                 ((float) ChronoUnit.DAYS.between(transactionDate, LocalDate.now()) / Year.now().length());
                         double baseInterest = (double) ((int) (interestValue * decimalPlaces)) / decimalPlaces;
 
-                        log.info("================" + 10 + "================");
                         if (Objects.nonNull(ordinaryProduct.get().getMin_interest_bearing_amt()) ?
                                 minimumBalance > ordinaryProduct.get().getMin_interest_bearing_amt() : true) {
-                            log.info("================" + 11 + "================");
 
-                           /* DecimalFormat df = new DecimalFormat("#.##");
+                            DecimalFormat df = new DecimalFormat("#.##");
                             String baseInterestStr = df.format(baseInterest);
                             String minimumBalanceStr = df.format(minimumBalance);
-
-                            InterestHistory interestHistory = interestHistoryRepository.save(InterestHistory.builder()
-                                    .interest_before_deduction(Double.parseDouble(baseInterestStr))
-                                    .interest_rate(Double.valueOf(ordinaryProduct.get().getInterest_rate()))
-                                    .balance(Double.parseDouble(minimumBalanceStr))
-                                    .subscriptions(subscription)
-                                    .status(InterestPaymentState.PAID)
-                                    .build());
-
-                            log.info("================" + 12 + "================");
-                            netCharge = calculateCharges(ordinaryProduct.get(), baseInterest, interestHistory);
-                            netTax = calculateTax(ordinaryProduct.get(), baseInterest, interestHistory);
+                            InterestHistory interestHistory = null;
+                            if (isProcess) {
+                                interestHistory = interestHistoryRepository.save(InterestHistory.builder()
+                                        .interest_before_deduction(Double.parseDouble(baseInterestStr))
+                                        .interest_rate(Double.valueOf(ordinaryProduct.get().getInterest_rate()))
+                                        .balance(Double.parseDouble(minimumBalanceStr))
+                                        .subscriptions(subscription)
+                                        .status(InterestPaymentState.PAID)
+                                        .build());
+                            }
+                            netCharge = calculateCharges(ordinaryProduct.get(), baseInterest, interestHistory, isProcess);
+                            netTax = calculateTax(ordinaryProduct.get(), baseInterest, interestHistory, isProcess);
                             netInterest = baseInterest - netCharge - netTax;
-                            interestHistory.setInterest_after_deduction(netInterest);
-                            if (netInterest > 0) {
-                                interestHistoryRepository.save(interestHistory);
-                            }*/
-                            log.info("================" + 13 + "================");
+                            if (isProcess) {
+                                interestHistory.setInterest_after_deduction(netInterest);
+                                if (netInterest > 0) {
+                                    interestHistoryRepository.save(interestHistory);
+                                }
+                            }
+                            String netInterestStr = df.format(netInterest);
+                            String netChargeStr = df.format(netCharge);
+                            String netTaxStr = df.format(netTax);
+
                             return InterestBody.builder()
                                     .phone(subscription.getPhone())
-                                    .interestAmount(netInterest)
-                                    .chargeAmount(netCharge)
-                                    .taxAmount(netTax)
+//                                    .interestAmount(Double.parseDouble(netInterestStr))
+                                    .interestAmount(Double.parseDouble(baseInterestStr))
+                                    .chargeAmount(Double.parseDouble(netChargeStr))
+                                    .taxAmount(Double.parseDouble(netTaxStr))
                                     .fiId(String.valueOf(subscription.getProduct().getFinancial_institution_id()))
                                     .txnRef(String.valueOf(UUID.randomUUID()))
                                     .subscriptionId(String.valueOf(subscription.getId()))
@@ -303,9 +311,10 @@ public class ManualWithdrawalService {
         }
     }
 
-    private double calculateCharges(Products product, double baseInterest, InterestHistory interestHistory) {
+    private double calculateCharges(Products product, double baseInterest, InterestHistory interestHistory, boolean isProcess) {
         double chargesSum = 0;
         List<Charge> charges = chargesRepository.findByProductsIdAndStatus(product.getId(), ChargeState.ACTIVE);
+//        List<Charge> charges = chargesRepository.findByProductsIdAndStatus(product.getId(), "Interest", ChargeState.ACTIVE, ChargeState.ACTIVE);
         for (Charge charge : charges) {
             List<ChargeFees> chargeFees = chargeFeesRepository.findByChargeIdAndStatus(charge.getId(), ChargeState.ACTIVE);
             double interestRate = 0;
@@ -317,22 +326,26 @@ public class ManualWithdrawalService {
             }
             if (interestRate > 0) {
                 if (charge.getCharge_calculation_type().equals(ChargeRate.FLAT)) {
-                    interestFeeHistoryRepository.save(InterestFeeHistory.builder()
-                            .amount(interestRate)
-                            .charge_rate(interestRate)
-                            .interestHistory(interestHistory)
-                            .charge(charge)
-                            .status(InterestPaymentState.PAID)
-                            .build());
+                    if (isProcess) {
+                        interestFeeHistoryRepository.save(InterestFeeHistory.builder()
+                                .amount(interestRate)
+                                .charge_rate(interestRate)
+                                .interestHistory(interestHistory)
+                                .charge(charge)
+                                .status(InterestPaymentState.PAID)
+                                .build());
+                    }
                     chargesSum += interestRate;
                 } else if (charge.getCharge_calculation_type().equals(ChargeRate.PERCENTAGE)) {
-                    interestFeeHistoryRepository.save(InterestFeeHistory.builder()
-                            .amount((baseInterest * interestRate / 100))
-                            .charge_rate(interestRate)
-                            .interestHistory(interestHistory)
-                            .charge(charge)
-                            .status(InterestPaymentState.PAID)
-                            .build());
+                    if (isProcess) {
+                        interestFeeHistoryRepository.save(InterestFeeHistory.builder()
+                                .amount((baseInterest * interestRate / 100))
+                                .charge_rate(interestRate)
+                                .interestHistory(interestHistory)
+                                .charge(charge)
+                                .status(InterestPaymentState.PAID)
+                                .build());
+                    }
                     chargesSum += (baseInterest * interestRate / 100);
                 } else {
                 }
@@ -341,7 +354,7 @@ public class ManualWithdrawalService {
         return chargesSum;
     }
 
-    private double calculateTax(Products product, double baseInterest, InterestHistory interestHistory) {
+    private double calculateTax(Products product, double baseInterest, InterestHistory interestHistory, boolean isProcess) {
 
         double chargesSum = 0;
 
@@ -353,12 +366,14 @@ public class ManualWithdrawalService {
             }
         }
         if (chargesSum > 0) {
-            interestTaxHistoryRepository.save(TaxHistory.builder()
-                    .amount(chargesSum)
-                    .fee_rate(chargesSum)
-                    .interestHistory(interestHistory)
-                    .status(InterestPaymentState.SAVED)
-                    .build());
+            if (isProcess) {
+                interestTaxHistoryRepository.save(TaxHistory.builder()
+                        .amount(chargesSum)
+                        .fee_rate(chargesSum)
+                        .interestHistory(interestHistory)
+                        .status(InterestPaymentState.SAVED)
+                        .build());
+            }
         }
         return chargesSum;
     }

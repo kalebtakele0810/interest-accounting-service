@@ -3,6 +3,7 @@ package et.kacha.interestcalculating.util;
 import et.kacha.interestcalculating.entity.Transactions;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -17,9 +18,12 @@ public class MonthlyBalanceUtility {
         } else {
             float minimiumBalance = 0;
             minimiumBalance = firstTransaction.getBalance();
-            LocalDate firstDayOfMonth = LocalDate.now().withDayOfMonth(1);
+            LocalDateTime firstDayOfMonth = LocalDate.now().minusDays(1).withDayOfMonth(1).atStartOfDay();
+            LocalDateTime todayMidNight = LocalDateTime.now().toLocalDate().atStartOfDay();
             List<Transactions> newTransactions = new ArrayList<>(transactionsList.stream().filter(transaction ->
-                    firstDayOfMonth.isBefore(transaction.getUpdated_at().toInstant().atZone(ZoneId.systemDefault()).toLocalDate())).toList());
+                    firstDayOfMonth.isBefore(transaction.getUpdated_at().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())&&
+                            todayMidNight.isAfter(transaction.getUpdated_at().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())
+                    ).toList());
             for (Transactions transaction : newTransactions) {
                 if (minimiumBalance > transaction.getBalance()) {
                     minimiumBalance = transaction.getBalance();
@@ -35,9 +39,12 @@ public class MonthlyBalanceUtility {
             return 0;
         } else {
             float averageBalance = firstTransaction.getBalance();
-            LocalDate firstDayOfMonth = LocalDate.now().withDayOfMonth(1);
+            LocalDateTime firstDayOfMonth = LocalDate.now().minusDays(1).withDayOfMonth(1).atStartOfDay();
+            LocalDateTime todayMidNight = LocalDateTime.now().toLocalDate().atStartOfDay();
             List<Transactions> newTransactions = new ArrayList<>(transactionsList.stream().filter(transaction ->
-                    firstDayOfMonth.isBefore(transaction.getUpdated_at().toInstant().atZone(ZoneId.systemDefault()).toLocalDate())).toList());
+                    firstDayOfMonth.isBefore(transaction.getUpdated_at().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())&&
+                            todayMidNight.isAfter(transaction.getUpdated_at().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())
+            ).toList());
             int index = 1;
             for (Transactions transaction : newTransactions) {
                 averageBalance = (averageBalance + transaction.getBalance()) / ++index;
@@ -47,11 +54,12 @@ public class MonthlyBalanceUtility {
     }
 
     private static Transactions getFirstBalance(List<Transactions> transactionsList) {
-        LocalDate firstDayOfMonth = LocalDate.now().withDayOfMonth(1);
 
-        List<Transactions> oldTransactions = new ArrayList<>(transactionsList.stream().filter(transaction ->
-                firstDayOfMonth.isAfter(transaction.getUpdated_at().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()) ||
-                        firstDayOfMonth.isEqual(transaction.getUpdated_at().toInstant().atZone(ZoneId.systemDefault()).toLocalDate())).toList());
+        LocalDateTime firstDayOfMonth = LocalDate.now().minusDays(1).withDayOfMonth(1).atStartOfDay();
+
+        List<Transactions> oldTransactions = new ArrayList<>(transactionsList.stream().filter(transaction ->(
+                firstDayOfMonth.isAfter(transaction.getUpdated_at().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()) ||
+                        firstDayOfMonth.isEqual(transaction.getUpdated_at().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()))).toList());
         if (oldTransactions.isEmpty()) {
             return null;
         } else {

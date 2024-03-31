@@ -1,7 +1,6 @@
 package et.kacha.interestcalculating.entity;
 
-import et.kacha.interestcalculating.constants.SubscriptionStatus;
-import et.kacha.interestcalculating.constants.TransactionStatus;
+import et.kacha.interestcalculating.constants.ChargeState;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,43 +11,34 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.Date;
 
-@Table(name = "subscriptions")
+@Table(name = "actions")
 @Entity
 @Getter
 @Setter
 @SuperBuilder
 @NoArgsConstructor
-public class Subscriptions {
+public class Actions {
 
     @Id
-    @GeneratedValue(generator = "subscriptions_id_seq", strategy = GenerationType.IDENTITY)
+    @GeneratedValue(generator = "actions_id_seq", strategy = GenerationType.IDENTITY)
     @Column(insertable = false)
     private Integer id;
 
     @Column(nullable = false)
-    private Float balance;
+    private String name;
 
     @Column(nullable = false)
-    private String phone;
+    private String action;
 
-    @Column(nullable = false)
-    private String account_number;
+    @Column
+    private String sub_action;
 
-    @Column(nullable = false)
-    private String short_code;
-
-    @ManyToOne
-    @JoinColumn(name = "customer_id")
-    private Customers customer;
-
-    @ManyToOne
-    @JoinColumn(nullable = false, name = "saving_product_id")
-    private Products product;
+    @Column
+    private Integer user_id;
 
     //ACTIVE,INACTIVE
-    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private SubscriptionStatus status;
+    private ChargeState status;
 
     @CreationTimestamp
     @Column(nullable = false)

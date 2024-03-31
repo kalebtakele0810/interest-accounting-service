@@ -31,9 +31,11 @@ public class DailyInterestCalculator {
 
     private final InterestUtility interestUtility;
 
-    @Scheduled(cron = "0 30 23 * * *", zone = "GMT+3")
+    @Scheduled(cron = "0 10 0 * * *", zone = "GMT+3")
     public void searchDailyProducts() {
+
         log.info("Regular Daily interest processing started.");
+
         List<Products> products = productsRepository.findByInterestCompTypeAndProductstate(
                 InterestCompType.DAILY,
                 ProductState.ACTIVE,
@@ -44,7 +46,6 @@ public class DailyInterestCalculator {
             List<Subscriptions> subscriptions = subscriptionsRepository.findByProductIdAndStatus(product.getId(), SubscriptionStatus.ACTIVE);
 
             for (Subscriptions subscription : subscriptions) {
-
                 Customers customer = subscription.getCustomer();
 
                 List<Transactions> transactionsList = transactionsRepository.findByProductIdAndCustomerIdAndStatus(
@@ -52,7 +53,8 @@ public class DailyInterestCalculator {
                         customer.getId(),
                         ProductState.ACTIVE,
                         TransactionStatus.SUCCESS,
-                        SubscriptionStatus.ACTIVE);
+                        SubscriptionStatus.ACTIVE,
+                        false);
 
                 if (Objects.nonNull(transactionsList)) {
                     float interestPayableBalance = 0;
@@ -64,6 +66,7 @@ public class DailyInterestCalculator {
                     }
                     interestUtility.saveDailyInterest(product, subscription, interestPayableBalance);
                 }
+
             }
         }
         log.info("Regular Daily interest processing ended.");

@@ -1,0 +1,61 @@
+@startuml
+title Salary Advance - Auto/Sweep Repayment
+autonumber
+actor customer
+
+box KACHA  #orange
+participant "APP/USSD"
+participant "WMS [Wallet Management System]/Kacha LMS"
+participant "Notification Client"
+end box
+
+box Ezra #Lightgreen
+participant "API Gateway"
+participant LMS
+end box
+
+box Bank #LightBlue
+participant CBS
+end box
+
+"WMS [Wallet Management System]/Kacha LMS" ->"WMS [Wallet Management System]/Kacha LMS": Schedule a job on defined intervals to check matured loans
+"WMS [Wallet Management System]/Kacha LMS"->  "WMS [Wallet Management System]/Kacha LMS": Check customer balance at Kacha
+alt fund available at Kacha
+alt Repayment = Full
+"WMS [Wallet Management System]/Kacha LMS" -> "WMS [Wallet Management System]/Kacha LMS": C2B to loan collection A/C
+
+"WMS [Wallet Management System]/Kacha LMS"->"API Gateway": Notify loan repay
+"API Gateway"->LMS: Notify loan repay
+LMS-> LMS:Record successful repayment and \nchange status on LMS
+LMS -->"API Gateway":Response
+"API Gateway" -->"WMS [Wallet Management System]/Kacha LMS":notification ACK
+"WMS [Wallet Management System]/Kacha LMS" -[#Green]>"WMS [Wallet Management System]/Kacha LMS":update loan status
+
+end
+alt Repayment = Partial
+"WMS [Wallet Management System]/Kacha LMS" -> "WMS [Wallet Management System]/Kacha LMS": C2B to loan collection A/C
+"WMS [Wallet Management System]/Kacha LMS" -> "WMS [Wallet Management System]/Kacha LMS": Update Lien Balance
+"WMS [Wallet Management System]/Kacha LMS" -> CBS: C2B to loan collection A/C
+CBS --> "WMS [Wallet Management System]/Kacha LMS": C2B Response
+"WMS [Wallet Management System]/Kacha LMS" -> "WMS [Wallet Management System]/Kacha LMS": Check against Lien amount
+alt Repayment = Full
+"WMS [Wallet Management System]/Kacha LMS" -[#Green]>"WMS [Wallet Management System]/Kacha LMS":update loan status
+
+end
+alt Repayment = Partial
+"WMS [Wallet Management System]/Kacha LMS" -[#Green]>"WMS [Wallet Management System]/Kacha LMS":update lien amount
+
+end
+"WMS [Wallet Management System]/Kacha LMS"->"API Gateway": Notify loan repay
+"API Gateway"->LMS: Notify loan repay
+LMS-> LMS:Record successful repayment and \nchange status on LMS
+LMS -->"API Gateway":Response
+"API Gateway" -->"WMS [Wallet Management System]/Kacha LMS":notification ACK
+"WMS [Wallet Management System]/Kacha LMS"-[#red]>"Notification Client":SMS /InAPP Notification of repayment
+"Notification Client" ->customer:Notification Message of repayment
+end
+
+end
+
+
+@enduml

@@ -10,7 +10,6 @@ import java.util.List;
 
 @Repository
 public interface InterestTaxHistoryRepository extends JpaRepository<TaxHistory, Integer> {
-
     @Query("select t from TaxHistory t where t.interestHistory.id = ?1 and t.status = ?2")
     List<TaxHistory> findByInterestHistoryIdAndStatus(Integer id, InterestPaymentState status);
 }

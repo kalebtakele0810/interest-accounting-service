@@ -29,9 +29,6 @@ public class InterestHistory {
     @Column(nullable = true,name = "request_ref_id")
     private String requestRefId;
 
-    /*@Column(nullable = false)
-    private Double amount;*/
-
     @Column(nullable = false)
     private Double balance;
 

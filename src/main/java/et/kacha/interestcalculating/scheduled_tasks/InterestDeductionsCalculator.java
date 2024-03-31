@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Objects;
 
@@ -29,11 +30,15 @@ public class InterestDeductionsCalculator {
 
     private final InterestTaxHistoryRepository interestTaxHistoryRepository;
 
-    @Scheduled(cron = "0 20 0 * * *", zone = "GMT+3")
-    public void searchMonthlyProducts() {
+    @Scheduled(cron = "0 40 0 * * *", zone = "GMT+3")
+    public void searchCharges() {
+
         log.info("Deduction service processing started.");
+
         List<InterestHistory> interestHistories = interestHistoryRepository.findByStatus(InterestPaymentState.UNPROCESSED);
+
         for (InterestHistory interestHistory : interestHistories) {
+
             Subscriptions subscription = interestHistory.getSubscriptions();
             double baseInterest = interestHistory.getInterest_before_deduction();
             Products product = subscription.getProduct();
@@ -42,23 +47,31 @@ public class InterestDeductionsCalculator {
             double netInterest = baseInterest - totalCharges - totalTaxes;
             interestHistory.setInterest_after_deduction(netInterest > 0 ? netInterest : 0);
             interestHistory.setStatus(InterestPaymentState.SAVED);
+
+            DecimalFormat df = new DecimalFormat("#.##");
             log.info("Deduction detail for interest history id: {} | Initial base interest: {} " +
                             "| net interest after deduction: {} | total tax deducted: {} | total charge deducted: {}",
-                    interestHistory.getId(), baseInterest, netInterest, totalTaxes, totalCharges);
+                    interestHistory.getId(), df.format(baseInterest), df.format(netInterest), df.format(totalTaxes), df.format(totalCharges));
+
             interestHistoryRepository.save(interestHistory);
         }
+
         log.info("Deduction service processing ended.");
     }
 
     private double calculateCharges(Products product, double baseInterest, InterestHistory interestHistory) {
         double chargesSum = 0;
         List<Charge> charges = chargesRepository.findByProductsIdAndStatus(product.getId(), ChargeState.ACTIVE);
+//      List<Charge> charges = chargesRepository.findByProductsIdAndStatus(product.getId(), "Interest", ChargeState.ACTIVE, ChargeState.ACTIVE);
+
         for (Charge charge : charges) {
             List<ChargeFees> chargeFees = chargeFeesRepository.findByChargeIdAndStatus(charge.getId(), ChargeState.ACTIVE);
+
             double interestRate = 0;
             for (ChargeFees chargeFee : chargeFees) {
-                if (Objects.isNull(chargeFee.getRange_minimum()) || (chargeFee.getRange_minimum() <= baseInterest && chargeFee.getRange_maximum() > baseInterest)
-                ) {
+                if ((Objects.isNull(chargeFee.getRange_minimum()) && Objects.isNull(chargeFee.getRange_maximum())) ||
+                        (chargeFee.getRange_minimum() == 0 && chargeFee.getRange_maximum() == 0) ||
+                        (chargeFee.getRange_minimum() <= baseInterest && chargeFee.getRange_maximum() > baseInterest)) {
                     interestRate = chargeFee.getCharge_amount();
                 }
             }

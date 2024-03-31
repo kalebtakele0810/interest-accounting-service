@@ -1,0 +1,55 @@
+@startuml
+title Salary Advance - Manual Repayment
+autonumber
+actor customer
+
+box KACHA  #orange
+participant "APP/USSD"
+participant "WMS [Wallet Management System]/Kacha LMS"
+participant "Notification Client"
+end box
+
+box Ezra #Lightgreen
+participant "API Gateway"
+participant LMS
+end box
+
+box Bank #LightBlue
+participant CBS
+end box
+
+customer ->"APP/USSD": Navigates to "Loan Section"
+"APP/USSD" ->"WMS [Wallet Management System]/Kacha LMS":CheckLoan Balance API
+"WMS [Wallet Management System]/Kacha LMS" -> "WMS [Wallet Management System]/Kacha LMS":Check balance
+
+"WMS [Wallet Management System]/Kacha LMS" -->"APP/USSD":LoanBalance API response
+alt Outstanding Loan = YES
+"APP/USSD" -->customer: Display outstanding loan detail
+customer ->"APP/USSD":Enters the amount and Enter MPIN
+"APP/USSD" ->"APP/USSD":Validate:\n\ni. Entered Amount shouldn't be\n   greater the outstanding loan
+"APP/USSD" ->"WMS [Wallet Management System]/Kacha LMS":repay-loan API
+"WMS [Wallet Management System]/Kacha LMS" -->"APP/USSD":repay-loan API Response
+
+
+"WMS [Wallet Management System]/Kacha LMS"-[#red]>  "WMS [Wallet Management System]/Kacha LMS": C2B API (MSISDN)
+"WMS [Wallet Management System]/Kacha LMS" ->"WMS [Wallet Management System]/Kacha LMS":Debit Customer\nCredit Collection pool A/C
+alt C2B = Successful
+"WMS [Wallet Management System]/Kacha LMS"->"API Gateway": Notify loan repay
+"API Gateway"->LMS: Notify loan repay
+LMS-> LMS:Record successful repayment and \nchange status on LMS
+LMS -->"API Gateway":ACK
+"API Gateway" -->"WMS [Wallet Management System]/Kacha LMS":notification ACK
+"WMS [Wallet Management System]/Kacha LMS"-[#red]>"Notification Client":SMS /InAPP Notification of repayment
+"Notification Client" ->customer:Notification Message of repayment
+else Repayment = Full
+"WMS [Wallet Management System]/Kacha LMS" -[#Green]>"WMS [Wallet Management System]/Kacha LMS":update loan status
+
+else Repayment = Partial
+"WMS [Wallet Management System]/Kacha LMS" -[#Green]>"WMS [Wallet Management System]/Kacha LMS":Update outstanding balance
+end
+
+else Outstanding Loan = NO
+"APP/USSD" -->customer: No Repayment option will be\nvisible to customer
+end
+
+@enduml

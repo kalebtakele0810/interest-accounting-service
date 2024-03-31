@@ -4,10 +4,7 @@ package et.kacha.interestcalculating.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import et.kacha.interestcalculating.constants.*;
-import et.kacha.interestcalculating.dto.InterestRequest;
-import et.kacha.interestcalculating.dto.InterestBody;
-import et.kacha.interestcalculating.dto.MainResponse;
-import et.kacha.interestcalculating.dto.MainRequest;
+import et.kacha.interestcalculating.dto.*;
 import et.kacha.interestcalculating.dto.callback.CallBackResponse;
 import et.kacha.interestcalculating.entity.*;
 import et.kacha.interestcalculating.repository.*;
@@ -20,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Arrays;
 import java.util.Date;
 
 @RequiredArgsConstructor
@@ -47,14 +45,14 @@ public class MainController {
     private final ProcessCallBackService processCallBackService;
 
     @PostMapping("/process")
-    MainResponse processInterestManual(@RequestBody MainRequest interestBody) {
+    MainInterestRequest processInterestManual(@RequestBody MainRequest interestBody) {
 
         try {
             log.info("On demand Interest calculation request | {}", new ObjectMapper().writeValueAsString(interestBody));
 
             InterestRequest interestRequest = objectMapper.convertValue(interestBody.getPayload(), InterestRequest.class);
 
-            MainResponse mainResponse = manualWithdrawalService.calculateUnpaidInterest(interestRequest, interestBody);
+            MainInterestRequest mainResponse = manualWithdrawalService.calculateUnpaidInterest(interestRequest, interestBody,true);
 
             log.info("On demand Interest calculation response | {}", new ObjectMapper().writeValueAsString(mainResponse));
 
@@ -62,12 +60,50 @@ public class MainController {
 
         } catch (JsonProcessingException e) {
             log.error(e.getMessage());
-            return MainResponse.builder()
-                    .id(interestBody.getId())
-                    .responseDesc("Unexpected error occur while parsing the request.")
-                    .responseCode("3")
+            return MainInterestRequest.builder()
+                    .commandId("PayInterest")
+                    .fi_id("")
+                    .callbackUrl("")
+                    .payload(Arrays.asList(InterestBody.builder()
+                            .subscriptionId("")
+                            .interestAmount(0)
+                            .taxAmount(0)
+                            .chargeAmount(0)
+                            .txnRef(null)
+                            .phone(null)
+                            .build()))
                     .build();
+        }
+    }
+    @PostMapping("/validate")
+    MainInterestRequest validateInterestManual(@RequestBody MainRequest interestBody) {
 
+        try {
+            log.info("On demand Interest validation request | {}", new ObjectMapper().writeValueAsString(interestBody));
+
+            InterestRequest interestRequest = objectMapper.convertValue(interestBody.getPayload(), InterestRequest.class);
+
+            MainInterestRequest mainResponse = manualWithdrawalService.calculateUnpaidInterest(interestRequest, interestBody,false);
+
+            log.info("On demand Interest validation response | {}", new ObjectMapper().writeValueAsString(mainResponse));
+
+            return mainResponse;
+
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage());
+            return MainInterestRequest.builder()
+                    .commandId("PayInterest")
+                    .fi_id("")
+                    .callbackUrl("")
+                    .payload(Arrays.asList(InterestBody.builder()
+                            .subscriptionId("")
+                            .interestAmount(0)
+                            .taxAmount(0)
+                            .chargeAmount(0)
+                            .txnRef(null)
+                            .phone(null)
+                            .build()))
+                    .build();
         }
     }
 

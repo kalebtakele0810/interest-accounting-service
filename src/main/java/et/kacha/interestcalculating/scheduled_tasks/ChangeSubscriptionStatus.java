@@ -12,7 +12,6 @@ import et.kacha.interestcalculating.repository.SubscriptionsRepository;
 import et.kacha.interestcalculating.repository.TransactionsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -33,10 +32,11 @@ public class ChangeSubscriptionStatus {
     private final SubscriptionsRepository subscriptionsRepository;
 
     private final TransactionsRepository transactionsRepository;
-    @Scheduled(cron =  "0 0 3 * * *", zone = "GMT+3")
-    public void searchTimeDepositProducts() {
 
-        log.info("Scheduled deactivation started.");
+//    @Scheduled(cron = "0 0 3 * * *", zone = "GMT+3")
+    public void searchTimeDepositProductsforInactivity() {
+
+        log.info("Scheduled inactivation started.");
 
         List<Products> products = productsRepository.findByState(ProductState.ACTIVE);
 
@@ -52,27 +52,77 @@ public class ChangeSubscriptionStatus {
                         customer.getId(),
                         ProductState.ACTIVE,
                         TransactionStatus.SUCCESS,
-                        SubscriptionStatus.ACTIVE);
-                if (transactionsList.size() > 0) {
+                        SubscriptionStatus.ACTIVE,
+                        false);
+                if (!transactionsList.isEmpty()) {
                     Collections.sort(transactionsList, Comparator.comparing(Transactions::getUpdated_at));
                     Transactions lastTransaction = transactionsList.get(transactionsList.size() - 1);
-                    long DaysSinceLastTransaction = ChronoUnit.DAYS.between(lastTransaction.getUpdated_at().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().toLocalDate(), LocalDate.now());
-                    if (Objects.nonNull(product.getDays_for_inactivity()) && DaysSinceLastTransaction > product.getDays_for_inactivity()) {
-                        log.info("subscription:" + subscription.getId() + " deactivated");
+                    long daysSinceLastTransaction = ChronoUnit.DAYS.between(lastTransaction.getUpdated_at().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().toLocalDate(), LocalDate.now());
+                    if (Objects.nonNull(product.getDays_for_inactivity()) && daysSinceLastTransaction > product.getDays_for_inactivity()) {
+                        log.info("subscription:" + subscription.getId() + " inactivated");
                         subscription.setStatus(SubscriptionStatus.INACTIVE);
+                        subscriptionsRepository.save(subscription);
+                        transactionsRepository.updateIs_archivedBySubscriptions(true, subscription);
+                    }
+                } else {
+                    long daysSinceLastTransaction = ChronoUnit.DAYS.between(subscription.getUpdated_at().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().toLocalDate(), LocalDate.now());
+                    if (Objects.nonNull(product.getDays_for_inactivity()) && daysSinceLastTransaction > product.getDays_for_inactivity()) {
+                        log.info("subscription:" + subscription.getId() + " inactivated");
+                        subscription.setStatus(SubscriptionStatus.INACTIVE);
+                        subscriptionsRepository.save(subscription);
+                        transactionsRepository.updateIs_archivedBySubscriptions(true, subscription);
+                    }
+                }
+
+            }
+        }
+        log.info("Scheduled inactivation ended.");
+    }
+
+//    @Scheduled(cron = "0 0 4 * * *", zone = "GMT+3")
+    public void searchTimeDepositProductsForDormancy() {
+
+        log.info("Scheduled dormancy started.");
+
+        List<Products> products = productsRepository.findByState(ProductState.ACTIVE);
+
+        for (Products product : products) {
+
+            List<Subscriptions> subscriptions = subscriptionsRepository.findByProductIdAndStatus(product.getId(),
+                    SubscriptionStatus.ACTIVE);
+
+            for (Subscriptions subscription : subscriptions) {
+                Customers customer = subscription.getCustomer();
+                List<Transactions> transactionsList = transactionsRepository.findByProductIdAndCustomerIdAndStatus(
+                        product.getId(),
+                        customer.getId(),
+                        ProductState.ACTIVE,
+                        TransactionStatus.SUCCESS,
+                        SubscriptionStatus.INACTIVE,
+                        true);
+                if (!transactionsList.isEmpty()) {
+                    Collections.sort(transactionsList, Comparator.comparing(Transactions::getUpdated_at));
+                    Transactions lastTransaction = transactionsList.get(transactionsList.size() - 1);
+                    long daysSinceLastTransaction =
+                            ChronoUnit.DAYS.between(lastTransaction.getUpdated_at().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().toLocalDate(),
+                                    LocalDate.now());
+                    if (Objects.nonNull(product.getDays_for_dormancy()) && daysSinceLastTransaction > product.getDays_for_dormancy()) {
+                        log.info("subscription:" + subscription.getId() + " dormanted");
+                        subscription.setStatus(SubscriptionStatus.DORMANT);
                         subscriptionsRepository.save(subscription);
                     }
                 } else {
-                    long DaysSinceLastTransaction = ChronoUnit.DAYS.between(subscription.getUpdated_at().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().toLocalDate(), LocalDate.now());
-                    if (Objects.nonNull(product.getDays_for_inactivity()) && DaysSinceLastTransaction > product.getDays_for_inactivity()) {
-                        log.info("subscription:" + subscription.getId() + " deactivated");
-                        subscription.setStatus(SubscriptionStatus.INACTIVE);
+                    long daysSinceLastTransaction = ChronoUnit.DAYS.between(subscription.getUpdated_at().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().toLocalDate(),
+                            LocalDate.now());
+                    if (Objects.nonNull(product.getDays_for_dormancy()) && daysSinceLastTransaction > product.getDays_for_dormancy()) {
+                        log.info("subscription:" + subscription.getId() + " dormanted");
+                        subscription.setStatus(SubscriptionStatus.DORMANT);
                         subscriptionsRepository.save(subscription);
                     }
                 }
 
             }
         }
-        log.info("Scheduled deactivation ended.");
+        log.info("Scheduled dormancy ended.");
     }
 }

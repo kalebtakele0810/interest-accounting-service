@@ -18,11 +18,13 @@ public class DailyBalanceUtility {
             float minimiumBalance = 0;
             minimiumBalance = firstTransaction.getBalance();
 
+            LocalDateTime yesterdayMidNight = LocalDateTime.now().minusDays(1).toLocalDate().atStartOfDay();
             LocalDateTime todayMidNight = LocalDateTime.now().toLocalDate().atStartOfDay();
 
             List<Transactions> newTransactions = new ArrayList<>(transactionsList.stream().filter(transaction ->
-                    todayMidNight.isBefore(transaction.getUpdated_at().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())).toList());
-
+                    yesterdayMidNight.isBefore(transaction.getUpdated_at().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()) &&
+                            todayMidNight.isAfter(transaction.getUpdated_at().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())
+            ).toList());
             for (Transactions transaction : newTransactions) {
                 if (minimiumBalance > transaction.getBalance()) {
                     minimiumBalance = transaction.getBalance();
@@ -41,10 +43,12 @@ public class DailyBalanceUtility {
         } else {
             float averageBalance = firstTransaction.getBalance();
 
+            LocalDateTime yesterdayMidNight = LocalDateTime.now().minusDays(1).toLocalDate().atStartOfDay();
             LocalDateTime todayMidNight = LocalDateTime.now().toLocalDate().atStartOfDay();
 
             List<Transactions> newTransactions = new ArrayList<>(transactionsList.stream().filter(transaction ->
-                    todayMidNight.isBefore(transaction.getUpdated_at().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())).toList());
+                    yesterdayMidNight.isBefore(transaction.getUpdated_at().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()) &&
+                            todayMidNight.isAfter(transaction.getUpdated_at().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())).toList());
 
             int index = 1;
             for (Transactions transaction : newTransactions) {
@@ -56,11 +60,13 @@ public class DailyBalanceUtility {
 
     private static Transactions getFirstBalance(List<Transactions> transactionsList) {
 
-        LocalDateTime todayMidNight = LocalDateTime.now().toLocalDate().atStartOfDay();
 
-        List<Transactions> oldTransactions = new ArrayList<>(transactionsList.stream().filter(transaction ->
-                todayMidNight.isAfter(transaction.getUpdated_at().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()) ||
-                        todayMidNight.isEqual(transaction.getUpdated_at().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())).toList());
+        LocalDateTime yesterdayMidNight = LocalDateTime.now().minusDays(1).toLocalDate().atStartOfDay();
+
+        List<Transactions> oldTransactions = new ArrayList<>(transactionsList.stream().filter(transaction -> (
+                yesterdayMidNight.isAfter(transaction.getUpdated_at().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()) ||
+                        yesterdayMidNight.isEqual(transaction.getUpdated_at().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()))
+        ).toList());
 
         if (oldTransactions.isEmpty()) {
             return null;

@@ -1,0 +1,68 @@
+@startuml
+title Salary Advance - Eligibility | Lending Journey
+autonumber
+
+actor Customer as "Customer"
+box KACHA  #orange
+participant "APP/USSD"
+participant "WMS [Wallet Management System]/Kacha LMS"
+participant "Notification Client"
+end box
+
+box Ezra #Lightgreen
+participant "API Gateway"
+participant LMS
+end box
+
+box Bank #LightBlue
+participant CBS
+end box
+
+Customer -> "APP/USSD": Requests subscription
+"APP/USSD" --> Customer: Display T&C
+Customer --> "APP/USSD": Accept T&C
+"APP/USSD" --> "WMS [Wallet Management System]/Kacha LMS": Record T&C flag=true
+"APP/USSD" -> "WMS [Wallet Management System]/Kacha LMS": Requests subscription
+"WMS [Wallet Management System]/Kacha LMS" -> "API Gateway": Check Eligibility Request
+"API Gateway" -> LMS: Check Eligibility Request
+LMS --> "API Gateway": Eligibility Status Response
+"API Gateway" --> "WMS [Wallet Management System]/Kacha LMS": Check Eligibility Response
+"WMS [Wallet Management System]/Kacha LMS" --> Customer: Eligibility Status
+
+alt Customer is eligible
+"WMS [Wallet Management System]/Kacha LMS"-[#red]>"Notification Client":SMS /InAPP Notification of subscription
+"Notification Client" ->Customer:Notification Message of subscription
+end
+alt Customer is not eligible
+    "WMS [Wallet Management System]/Kacha LMS" -> Customer: Ineligible for subscription
+    "WMS [Wallet Management System]/Kacha LMS"-[#red]>"Notification Client":SMS /InAPP Notification of subscription
+    "Notification Client" ->Customer:Notification Message of subscription
+
+end
+alt Customer is eligible
+    Customer -> "APP/USSD": Access the "salary advance" options
+    "APP/USSD" -> Customer: Display options to customer\n i. 15 days\nii.30 Days\niii.60 Days
+    Customer --> "APP/USSD" : Selects the preferred tenor
+    "APP/USSD" --> "WMS [Wallet Management System]/Kacha LMS" : Selects the preferred tenor
+    "WMS [Wallet Management System]/Kacha LMS" -> "API Gateway": Loan Offer API
+    "API Gateway" -> LMS: Loan Offer Calculation
+    LMS --> "API Gateway": Loan Offer API response
+    "API Gateway" -->  "WMS [Wallet Management System]/Kacha LMS": Loan Offer API response
+    "WMS [Wallet Management System]/Kacha LMS"--> "APP/USSD": Loan Offer API response
+    "APP/USSD"--> Customer: Display available limit\n and Product detail
+    Customer -> "APP/USSD": Submit desired\n amount with MPIN
+    "APP/USSD" -> "WMS [Wallet Management System]/Kacha LMS": Validate MPIN and request B2C
+    "WMS [Wallet Management System]/Kacha LMS" -> "API Gateway": Loan Creation API
+    "API Gateway" -> LMS: Create loan
+    LMS --> "API Gateway": Loan Creation API response
+    "API Gateway" -->  "WMS [Wallet Management System]/Kacha LMS": Loan Creation API response
+    "WMS [Wallet Management System]/Kacha LMS" -> "WMS [Wallet Management System]/Kacha LMS": Create loan
+    "WMS [Wallet Management System]/Kacha LMS" -> "WMS [Wallet Management System]/Kacha LMS": Perform B2C and disburse float
+    "WMS [Wallet Management System]/Kacha LMS" -> "APP/USSD": Loan creation status response
+    "APP/USSD" --> Customer: Display creation status response
+
+    "WMS [Wallet Management System]/Kacha LMS"-[#red]>"Notification Client":SMS /InAPP Notification of subscription
+    "Notification Client" ->Customer:Notification Message of subscription
+
+
+@enduml
