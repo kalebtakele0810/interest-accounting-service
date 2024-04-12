@@ -33,7 +33,6 @@ public class MonthlyInterestCalculator {
 
     private final InterestUtility interestUtility;
 
-    //    @Scheduled(cron = "0 40 23 * * *", zone = "GMT+3")
     @Scheduled(cron = "0 30 0 * * *", zone = "GMT+3")
     public void searchMonthlyProducts() {
 
@@ -47,19 +46,18 @@ public class MonthlyInterestCalculator {
 
         LocalDate lastDayOfMonth = new CalenderUtil().getLastDayOfMonth(currentDate);
 
+        if (currentDate.isEqual(lastDayOfMonth)) {
+
         for (Products product : products) {
 
-            log.info("Monthly interest processing for:" + product.getId());
-
-            if (currentDate.isEqual(lastDayOfMonth)) {
+            log.info("Monthly interest processing for product:" + product.getId());
 
                 List<Subscriptions> subscriptions = subscriptionsRepository.findByProductIdAndStatus(product.getId(), SubscriptionStatus.ACTIVE);
 
                 for (Subscriptions subscription : subscriptions) {
-
                     Customers customer = subscription.getCustomer();
 
-                    log.info("Monthly interest processing for customer:" + customer.getPhone());
+                    log.info("Monthly interest processing for customer:" + customer.getPhone() + " for subscription:" + subscription.getId());
 
                     List<Transactions> transactionsList = transactionsRepository.findByProductIdAndCustomerIdAndStatus(
                             product.getId(),

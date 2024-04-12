@@ -245,7 +245,6 @@ public class ManualWithdrawalService {
 
                         if (Objects.nonNull(ordinaryProduct.get().getMin_interest_bearing_amt()) ?
                                 minimumBalance > ordinaryProduct.get().getMin_interest_bearing_amt() : true) {
-
                             DecimalFormat df = new DecimalFormat("#.##");
                             String baseInterestStr = df.format(baseInterest);
                             String minimumBalanceStr = df.format(minimumBalance);
@@ -268,7 +267,6 @@ public class ManualWithdrawalService {
                                     interestHistoryRepository.save(interestHistory);
                                 }
                             }
-                            String netInterestStr = df.format(netInterest);
                             String netChargeStr = df.format(netCharge);
                             String netTaxStr = df.format(netTax);
 
@@ -284,10 +282,7 @@ public class ManualWithdrawalService {
                                     .build();
                         }
                     }
-
-
                 }
-
             }
         }
         return InterestBody.builder()

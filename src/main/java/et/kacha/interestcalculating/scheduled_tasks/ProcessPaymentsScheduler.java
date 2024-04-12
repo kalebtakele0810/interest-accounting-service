@@ -35,7 +35,7 @@ public class ProcessPaymentsScheduler {
     @Value("${interest.callback.url}")
     private String interestCallbackUrl;
 
-    @Scheduled(cron = "0 0 2 * * *", zone = "GMT+3")
+//    @Scheduled(cron = "0 0 2 * * *", zone = "GMT+3")
     public void searchScheduledInterestPayments() {
 
         log.info("Scheduled interest payment started.");
@@ -77,30 +77,25 @@ public class ProcessPaymentsScheduler {
                         + interestHistory.getInterest_before_deduction() + " | " + new ObjectMapper().writeValueAsString(mainRequest));
 
                 String mainResponse = sendInterestPaymentUtil.sendPaymentRequest(mainRequest);
-//                String mainResponse = "SUCCESS";
 
                 log.info("Response of interest payment | interest history Id " + interestHistory.getId() + " | response " + interestHistory.getInterest_after_deduction()
                         + " | " + mainResponse);
                 InterestPaymentState interestPaymentState;
                 if (Objects.nonNull(mainResponse)) {
-                    interestPaymentState = InterestPaymentState.PAID;
+                    interestPaymentState = InterestPaymentState.WAITING;
                 } else {
                     interestPaymentState = InterestPaymentState.ERROR;
                 }
-
-//                    interestHistory.setStatus(InterestPaymentState.WAITING);
                 interestHistory.setStatus(interestPaymentState);
                 interestHistory.setRequestRefId(requestRefId);
                 interestHistoryRepository.save(interestHistory);
 
                 for (InterestFeeHistory fee : interestFees) {
-//                        fee.setStatus(InterestPaymentState.WAITING);
                     fee.setStatus(interestPaymentState);
                     interestFeeHistoryRepository.save(fee);
                 }
 
                 for (TaxHistory tax : interestTaxes) {
-//                        tax.setStatus(InterestPaymentState.WAITING);
                     tax.setStatus(interestPaymentState);
                     interestTaxHistoryRepository.save(tax);
                 }

@@ -47,7 +47,7 @@ public class InterestUtility {
             double decimalPlaces = Math.pow(10, Objects.isNull(product.getDecimal_places()) ? 2 : product.getDecimal_places());
             double interestValue = balance *
                     (product.getInterest_rate() / 100) *
-                    ((float) (product.getTerm_duration() * 30) / Year.now().length());
+                    ((float) (product.getTerm_duration() ) / Year.now().length());
             double baseInterest = (double) ((int) (interestValue * decimalPlaces)) / decimalPlaces;
 
 

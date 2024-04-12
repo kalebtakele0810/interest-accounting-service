@@ -29,35 +29,38 @@ public class ProcessCallBackService {
 
     public MainResponse processInterestCallBack(CallBackResponse callBackBody) {
 
-        for (Payload payload : callBackBody.getPayload()) {
-            List<InterestHistory> unProcessedInterestPayments =
-                    interestHistoryRepository.findByRequestRefIdAndStatus(payload.getRequestRefId(), InterestPaymentState.WAITING);
-            for (InterestHistory interestHistory : unProcessedInterestPayments) {
-                try {
-                    List<InterestFeeHistory> interestFees = interestFeeHistoryRepository.findByInterestHistoryIdAndStatus(interestHistory.getId(), InterestPaymentState.SAVED);
+//        for (Payload payload : callBackBody.getPayload()) {
+        List<InterestHistory> unProcessedInterestPayments =
+                interestHistoryRepository.findByRequestRefIdAndStatus(callBackBody.getTrace_number(), InterestPaymentState.WAITING);
+        for (InterestHistory interestHistory : unProcessedInterestPayments) {
+            try {
+                List<InterestFeeHistory> interestFees = interestFeeHistoryRepository.findByInterestHistoryIdAndStatus(interestHistory.getId(), InterestPaymentState.WAITING);
 
-                    List<TaxHistory> interestTaxes = interestTaxHistoryRepository.findByInterestHistoryIdAndStatus(interestHistory.getId(), InterestPaymentState.SAVED);
+                List<TaxHistory> interestTaxes = interestTaxHistoryRepository.findByInterestHistoryIdAndStatus(interestHistory.getId(), InterestPaymentState.WAITING);
 
-                    interestHistory.setStatus(payload.getResponseCode() == 201 ? InterestPaymentState.PAID : InterestPaymentState.SAVED);
-                    interestHistoryRepository.save(interestHistory);
+                interestHistory.setStatus(callBackBody.getStatus().equalsIgnoreCase("PROCESSED") ? InterestPaymentState.PAID : InterestPaymentState.WAITING);
+                interestHistoryRepository.save(interestHistory);
 
-                    for (InterestFeeHistory fee : interestFees) {
-                        fee.setStatus(payload.getResponseCode() == 201 ? InterestPaymentState.PAID : InterestPaymentState.SAVED);
-                        interestFeeHistoryRepository.save(fee);
-                    }
-
-                    for (TaxHistory tax : interestTaxes) {
-                        tax.setStatus(payload.getResponseCode() == 201 ? InterestPaymentState.PAID : InterestPaymentState.SAVED);
-                        interestTaxHistoryRepository.save(tax);
-                    }
-
-
-                } catch (Exception e) {
-                    e.printStackTrace();
+                for (InterestFeeHistory fee : interestFees) {
+                    fee.setStatus(callBackBody.getStatus().equalsIgnoreCase("PROCESSED") ? InterestPaymentState.PAID : InterestPaymentState.WAITING);
+                    interestFeeHistoryRepository.save(fee);
                 }
+
+                for (TaxHistory tax : interestTaxes) {
+                    tax.setStatus(callBackBody.getStatus().equalsIgnoreCase("PROCESSED") ? InterestPaymentState.PAID : InterestPaymentState.WAITING);
+                    interestTaxHistoryRepository.save(tax);
+                }
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+//                }
             }
         }
 
-        return null;
+        return MainResponse.builder()
+                .responseDesc("SUCCESS")
+                .responseCode("0")
+                .build();
     }
 }

@@ -34,7 +34,7 @@ public class ChangeSubscriptionStatus {
     private final TransactionsRepository transactionsRepository;
 
 //    @Scheduled(cron = "0 0 3 * * *", zone = "GMT+3")
-    public void searchTimeDepositProductsforInactivity() {
+    public void searchProductsForInactivity() {
 
         log.info("Scheduled inactivation started.");
 
@@ -80,7 +80,7 @@ public class ChangeSubscriptionStatus {
     }
 
 //    @Scheduled(cron = "0 0 4 * * *", zone = "GMT+3")
-    public void searchTimeDepositProductsForDormancy() {
+    public void searchProductsForDormancy() {
 
         log.info("Scheduled dormancy started.");
 

@@ -1,6 +1,7 @@
 package et.kacha.interestcalculating.entity;
 
-import et.kacha.interestcalculating.constants.InterestPaymentState;
+import et.kacha.interestcalculating.constants.RecordType;
+import et.kacha.interestcalculating.constants.TransactionCategory;
 import et.kacha.interestcalculating.constants.TransactionStatus;
 import et.kacha.interestcalculating.constants.TransactionType;
 import jakarta.persistence.*;
@@ -26,6 +27,12 @@ public class Transactions {
     @Column(insertable = false)
     private Integer id;
 
+    @Column
+    private String from_act;
+
+    @Column
+    private String to_acct;
+
     @Column(nullable = false)
     private Float amount;
 
@@ -41,6 +48,14 @@ public class Transactions {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TransactionType transaction_type;
+
+    @Enumerated(EnumType.STRING)
+    @Column
+    private TransactionCategory transaction_category;
+
+    @Enumerated(EnumType.STRING)
+    @Column
+    private RecordType record_type;
 
     @Column(nullable = false)
     private String txn_id;

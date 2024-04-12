@@ -7,7 +7,6 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 
 @AllArgsConstructor
 @Getter
@@ -15,10 +14,17 @@ import java.util.ArrayList;
 @SuperBuilder
 public class CallBackResponse implements Serializable {
 
-    @JsonProperty("fi_id")
-    public String fi_id;
+    @JsonProperty("reference")
+    public String reference;
 
-    @JsonProperty("Payload")
-    public ArrayList<Payload> payload;
+    @JsonProperty("status")
+    public String status;
+
+    @JsonProperty("trace_number")
+    public String trace_number;
+
+
+   /* @JsonProperty("Payload")
+    public ArrayList<Payload> payload;*/
 
 }

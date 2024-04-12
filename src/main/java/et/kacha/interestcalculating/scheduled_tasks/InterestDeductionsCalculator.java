@@ -2,17 +2,22 @@ package et.kacha.interestcalculating.scheduled_tasks;
 
 import et.kacha.interestcalculating.constants.ChargeRate;
 import et.kacha.interestcalculating.constants.ChargeState;
+import et.kacha.interestcalculating.constants.InterestCompType;
 import et.kacha.interestcalculating.constants.InterestPaymentState;
 import et.kacha.interestcalculating.entity.*;
 import et.kacha.interestcalculating.repository.*;
+import et.kacha.interestcalculating.util.CalenderUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -30,33 +35,81 @@ public class InterestDeductionsCalculator {
 
     private final InterestTaxHistoryRepository interestTaxHistoryRepository;
 
-    @Scheduled(cron = "0 40 0 * * *", zone = "GMT+3")
+    //    @Scheduled(cron = "0 0 1 * * *", zone = "GMT+3")
     public void searchCharges() {
 
         log.info("Deduction service processing started.");
 
-        List<InterestHistory> interestHistories = interestHistoryRepository.findByStatus(InterestPaymentState.UNPROCESSED);
+        LocalDate currentDate = LocalDate.now().minusDays(1);
 
-        for (InterestHistory interestHistory : interestHistories) {
+        LocalDate lastDayOfMonth = new CalenderUtil().getLastDayOfMonth(currentDate);
 
-            Subscriptions subscription = interestHistory.getSubscriptions();
-            double baseInterest = interestHistory.getInterest_before_deduction();
-            Products product = subscription.getProduct();
-            double totalCharges = calculateCharges(product, baseInterest, interestHistory);
-            double totalTaxes = calculateTax(product, baseInterest, interestHistory);
-            double netInterest = baseInterest - totalCharges - totalTaxes;
-            interestHistory.setInterest_after_deduction(netInterest > 0 ? netInterest : 0);
-            interestHistory.setStatus(InterestPaymentState.SAVED);
+        if (currentDate.isEqual(lastDayOfMonth)) {
 
-            DecimalFormat df = new DecimalFormat("#.##");
-            log.info("Deduction detail for interest history id: {} | Initial base interest: {} " +
-                            "| net interest after deduction: {} | total tax deducted: {} | total charge deducted: {}",
-                    interestHistory.getId(), df.format(baseInterest), df.format(netInterest), df.format(totalTaxes), df.format(totalCharges));
+            List<InterestHistory> interestHistories = interestHistoryRepository.findByCompTypeStatus(InterestPaymentState.UNPROCESSED, InterestCompType.DAILY);
 
-            interestHistoryRepository.save(interestHistory);
+            Map<Subscriptions, Double> dailyInterestsSum = interestHistories.stream()
+                    .collect(Collectors.groupingBy(InterestHistory::getSubscriptions,
+                            Collectors.summingDouble(InterestHistory::getInterest_before_deduction)));
+            dailyInterestsSum.forEach(this::calculateDailyDeductions);
+
+            //////////////////Process For remaining separately
+            interestHistories = interestHistoryRepository.findByStatus(InterestPaymentState.UNPROCESSED);
+            for (InterestHistory interestHistory : interestHistories) {
+
+                Subscriptions subscription = interestHistory.getSubscriptions();
+                double baseInterest = interestHistory.getInterest_before_deduction();
+                Products product = subscription.getProduct();
+                if (Objects.isNull(product.getInterest_comp_type()) || !product.getInterest_comp_type().equals(InterestCompType.DAILY)) {
+                    double totalCharges = calculateCharges(product, baseInterest, interestHistory);
+                    double totalTaxes = calculateTax(product, baseInterest, interestHistory);
+                    double netInterest = baseInterest - totalCharges - totalTaxes;
+                    interestHistory.setInterest_after_deduction(netInterest > 0 ? netInterest : 0);
+                    interestHistory.setStatus(InterestPaymentState.SAVED);
+
+                    DecimalFormat df = new DecimalFormat("#.##");
+                    log.info("Deduction detail for interest history id: {} | Initial base interest: {} " +
+                                    "| net interest after deduction: {} | total tax deducted: {} | total charge deducted: {}",
+                            interestHistory.getId(), df.format(baseInterest), df.format(netInterest), df.format(totalTaxes), df.format(totalCharges));
+
+                    interestHistoryRepository.save(interestHistory);
+                }
+            }
         }
-
         log.info("Deduction service processing ended.");
+    }
+
+    private void calculateDailyDeductions(Subscriptions subscription, Double interestSum) {
+
+        Products product = subscription.getProduct();
+
+        InterestHistory interestHistory = interestHistoryRepository.save(InterestHistory.builder()
+                .interest_before_deduction(interestSum)
+                .interest_rate(Double.valueOf(product.getInterest_rate()))
+                .balance((double) 0)
+                .subscriptions(subscription)
+                .status(InterestPaymentState.SAVED)
+                .build());
+
+        interestHistoryRepository.save(interestHistory);
+
+        interestHistoryRepository.updateStatusBySubscriptionsAndStatus(InterestPaymentState.PAID, subscription, InterestPaymentState.UNPROCESSED);
+
+        double baseInterest = interestHistory.getInterest_before_deduction();
+        double totalCharges = calculateCharges(product, baseInterest, interestHistory);
+        double totalTaxes = calculateTax(product, baseInterest, interestHistory);
+        double netInterest = baseInterest - totalCharges - totalTaxes;
+        interestHistory.setInterest_after_deduction(netInterest > 0 ? netInterest : 0);
+        interestHistory.setStatus(InterestPaymentState.SAVED);
+
+        DecimalFormat df = new DecimalFormat("#.##");
+        log.info("Deduction detail for interest history id: {} | Initial base interest: {} " +
+                        "| net interest after deduction: {} | total tax deducted: {} | total charge deducted: {}",
+                interestHistory.getId(), df.format(baseInterest), df.format(netInterest), df.format(totalTaxes), df.format(totalCharges));
+
+        interestHistoryRepository.save(interestHistory);
+
+
     }
 
     private double calculateCharges(Products product, double baseInterest, InterestHistory interestHistory) {

@@ -1,9 +1,6 @@
 package et.kacha.interestcalculating.util;
 
 import et.kacha.interestcalculating.dto.MainInterestRequest;
-import et.kacha.interestcalculating.dto.MainRequest;
-import et.kacha.interestcalculating.dto.MainResponse;
-import et.kacha.interestcalculating.dto.MaturityInterestResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.net.ssl.*;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,6 +26,9 @@ public class SendInterestPaymentUtil {
 
     @Value("${webservice.endpoint.url}")
     private String webServiceEndpoint;
+
+    @Value("${webservice.ussd.endpoint.url}")
+    private String webServiceUSSDEndpoint;
 
     @Value("${webservice.endpoint.api-key}")
     private String webServiceApiKey;
@@ -48,6 +49,34 @@ public class SendInterestPaymentUtil {
             ResponseEntity<String> responseEntity = restTemplate.postForEntity(webServiceEndpoint, requestEntity, String.class);
 
             log.info("Pay interest response from webservice:" + (Objects.nonNull(responseEntity.getBody()) ? responseEntity.getBody() : ""));
+
+            if (Objects.nonNull(responseEntity.getBody()) && findWord(responseEntity.getBody(), "SUCCESS")) {
+                return responseEntity.getBody();
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public String sendUSSDRequest(List<Integer> ussdRequest) {
+        try {
+            HttpsURLConnection.setDefaultHostnameVerifier(trivialHostnameVerifier);
+            SSLContext sc = SSLContext.getInstance("SSL");
+            sc.init(null, UNQUESTIONING_TRUST_MANAGER, null);
+            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+            RestTemplate restTemplate = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("API-Key", webServiceApiKey);
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+            HttpEntity<List<Integer>> requestEntity = new HttpEntity<>(ussdRequest, headers);
+
+            ResponseEntity<String> responseEntity = restTemplate.postForEntity(webServiceUSSDEndpoint, requestEntity, String.class);
+
+            log.info("USSD response from webservice:" + (Objects.nonNull(responseEntity.getBody()) ? responseEntity.getBody() : ""));
 
             if (Objects.nonNull(responseEntity.getBody()) && findWord(responseEntity.getBody(), "SUCCESS")) {
                 return responseEntity.getBody();
