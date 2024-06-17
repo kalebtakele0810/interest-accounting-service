@@ -68,7 +68,7 @@ public class WhitelistService {
 
                 List<String> recordFromLine = getRecordFromLine(scanner.nextLine());
 
-                if (recordFromLine.size() == 2) {
+                if (recordFromLine.size() == 1) {
 
                     if (index > 1 && !isValidPhoneNumber(recordFromLine.get(0))) {
 
@@ -79,9 +79,9 @@ public class WhitelistService {
                     }
 
                     if (index > 1) {
-                        String productID = recordFromLine.get(1).trim();
+//                        String productID = recordFromLine.get(1).trim();
                         try {
-                            productById = productsRepository.findById(Integer.parseInt(productID));
+                            productById = productsRepository.findById(Integer.parseInt(productId));
                         } catch (NumberFormatException e) {
                             return MainResponse.builder()
                                     .responseDesc("Parsing exception at line " + index)
@@ -95,7 +95,7 @@ public class WhitelistService {
                                     .responseCode("1")
                                     .build();
                         }
-                        Whitelist byPhoneAndProductsId = whitelistRepository.findByPhoneAndProducts_Id(recordFromLine.get(0), Integer.parseInt(productID));
+                        Whitelist byPhoneAndProductsId = whitelistRepository.findByPhoneAndProducts_Id(recordFromLine.get(0), Integer.parseInt(productId));
                         if (!Objects.isNull(byPhoneAndProductsId)) {
                             return MainResponse.builder()
                                     .responseDesc("Customer at line " + index + " already whitelisted.")
@@ -116,7 +116,7 @@ public class WhitelistService {
             }
             for (List<String> recordFromLine : records) {
                 String phoneNumber = recordFromLine.get(0).trim();
-                String productID = recordFromLine.get(1).trim();
+//                String productID = recordFromLine.get(1).trim();
                 whitelistRepository.save(Whitelist.builder()
                         .phone(phoneNumber)
                         .status(ChargeState.PENDING)
@@ -124,7 +124,7 @@ public class WhitelistService {
                         .fi_id(mainLoginResponse.getData().getFi_id())
                         .products(productById.get())
                         .build());
-                log.info("Processing record from phone number " + phoneNumber + " and product id " + productID);
+                log.info("Processing record from phone number " + phoneNumber + " and product id " + productId);
                 index++;
 
             }
