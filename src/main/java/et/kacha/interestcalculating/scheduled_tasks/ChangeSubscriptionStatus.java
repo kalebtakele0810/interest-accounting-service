@@ -59,7 +59,7 @@ public class ChangeSubscriptionStatus {
                     Transactions lastTransaction = transactionsList.get(transactionsList.size() - 1);
                     long daysSinceLastTransaction = ChronoUnit.DAYS.between(lastTransaction.getUpdated_at().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().toLocalDate(), LocalDate.now());
                     if (Objects.nonNull(product.getDays_for_inactivity()) && daysSinceLastTransaction > product.getDays_for_inactivity()) {
-                        log.info("subscription:" + subscription.getId() + " inactivated");
+                        log.info("subscription:{} inactivated", subscription.getId());
                         subscription.setStatus(SubscriptionStatus.INACTIVE);
                         subscriptionsRepository.save(subscription);
                         transactionsRepository.updateIs_archivedBySubscriptions(true, subscription);

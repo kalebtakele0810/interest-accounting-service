@@ -35,7 +35,8 @@ public class ProcessPaymentsScheduler {
     @Value("${interest.callback.url}")
     private String interestCallbackUrl;
 
-//    @Scheduled(cron = "0 0 2 * * *", zone = "GMT+3")
+    //    @Scheduled(cron = "0 0 2 * * *", zone = "GMT+3")
+    @Scheduled(cron = "0 10 0 * * *", zone = "GMT+3")
     public void searchScheduledInterestPayments() {
 
         log.info("Scheduled interest payment started.");
@@ -77,6 +78,7 @@ public class ProcessPaymentsScheduler {
                         + interestHistory.getInterest_before_deduction() + " | " + new ObjectMapper().writeValueAsString(mainRequest));
 
                 String mainResponse = sendInterestPaymentUtil.sendPaymentRequest(mainRequest);
+//                String mainResponse = "SUccess";
 
                 log.info("Response of interest payment | interest history Id " + interestHistory.getId() + " | response " + interestHistory.getInterest_after_deduction()
                         + " | " + mainResponse);

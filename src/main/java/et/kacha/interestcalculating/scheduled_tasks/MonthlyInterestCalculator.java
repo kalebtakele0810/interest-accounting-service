@@ -17,6 +17,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 
@@ -33,7 +34,7 @@ public class MonthlyInterestCalculator {
 
     private final InterestUtility interestUtility;
 
-    @Scheduled(cron = "0 30 0 * * *", zone = "GMT+3")
+    @Scheduled(cron = "0 05 0 * * *", zone = "GMT+3")
     public void searchMonthlyProducts() {
 
         log.info("Regular Monthly interest processing started.");
@@ -42,43 +43,46 @@ public class MonthlyInterestCalculator {
                 ProductState.ACTIVE,
                 ProductType.REGULAR);
 
+        // Parse the string to a LocalDate object
+//        LocalDate currentDate = LocalDate.now();
         LocalDate currentDate = LocalDate.now().minusDays(1);
 
         LocalDate lastDayOfMonth = new CalenderUtil().getLastDayOfMonth(currentDate);
 
         if (currentDate.isEqual(lastDayOfMonth)) {
 
-        for (Products product : products) {
+            for (Products product : products) {
 
-            log.info("Monthly interest processing for product:" + product.getId());
+                log.info("Monthly interest processing for product:" + product.getId());
 
                 List<Subscriptions> subscriptions = subscriptionsRepository.findByProductIdAndStatus(product.getId(), SubscriptionStatus.ACTIVE);
 
                 for (Subscriptions subscription : subscriptions) {
-                    Customers customer = subscription.getCustomer();
 
-                    log.info("Monthly interest processing for customer:" + customer.getPhone() + " for subscription:" + subscription.getId());
+                        Customers customer = subscription.getCustomer();
 
-                    List<Transactions> transactionsList = transactionsRepository.findByProductIdAndCustomerIdAndStatus(
-                            product.getId(),
-                            customer.getId(),
-                            ProductState.ACTIVE,
-                            TransactionStatus.SUCCESS,
-                            SubscriptionStatus.ACTIVE,
-                            false);
+                        log.info("Monthly interest processing for customer:" + customer.getPhone() + " for subscription:" + subscription.getId());
 
-                    if (Objects.nonNull(transactionsList)) {
-                        float interestPayableBalance = 0;
-                        if (product.getInterest_calculated_using().equals(InterestCalculatedUsing.MIN_BALANCE)) {
-                            interestPayableBalance = MonthlyBalanceUtility.calculateMinimumBalance(transactionsList);
+                        List<Transactions> transactionsList = transactionsRepository.findByProductIdAndCustomerIdAndStatus(
+                                product.getId(),
+                                customer.getId(),
+                                ProductState.ACTIVE,
+                                TransactionStatus.SUCCESS,
+                                SubscriptionStatus.ACTIVE,
+                                false);
+
+                        if (Objects.nonNull(transactionsList)) {
+                            float interestPayableBalance = 0;
+                            if (product.getInterest_calculated_using().equals(InterestCalculatedUsing.MIN_BALANCE)) {
+                                interestPayableBalance = MonthlyBalanceUtility.calculateMinimumBalance(transactionsList);
+                            }
+                            if (product.getInterest_calculated_using().equals(InterestCalculatedUsing.AVG_BALANCE)) {
+                                interestPayableBalance = MonthlyBalanceUtility.calculateAverageBalance(transactionsList);
+                            }
+                            log.info("Interest Payable Balance for subscription:" + subscription.getId() + " is:" + interestPayableBalance);
+
+                            interestUtility.saveInterest(currentDate, product, subscription, interestPayableBalance);
                         }
-                        if (product.getInterest_calculated_using().equals(InterestCalculatedUsing.AVG_BALANCE)) {
-                            interestPayableBalance = MonthlyBalanceUtility.calculateAverageBalance(transactionsList);
-                        }
-                        log.info("Interest Payable Balance for subscription:" + subscription.getId() + " is:" + interestPayableBalance);
-
-                        interestUtility.saveInterest(currentDate, product, subscription, interestPayableBalance);
-                    }
                 }
             }
         }

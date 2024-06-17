@@ -33,11 +33,11 @@ public class USSDStatusScheduler {
 
         if (!ids.isEmpty()) {
 
-            log.info("Scheduled ussd service started.");
+            log.info("Scheduled USSD service started.");
 
             sendInterestPaymentUtil.sendUSSDRequest(ids);
 
-            log.info("Scheduled ussd service ended.");
+            log.info("Scheduled USSD service ended.");
         }
     }
 

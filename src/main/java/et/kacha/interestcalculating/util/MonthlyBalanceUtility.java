@@ -24,6 +24,7 @@ public class MonthlyBalanceUtility {
                     firstDayOfMonth.isBefore(transaction.getUpdated_at().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())&&
                             todayMidNight.isAfter(transaction.getUpdated_at().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())
                     ).toList());
+            newTransactions.sort(Comparator.comparing(Transactions::getUpdated_at));
             for (Transactions transaction : newTransactions) {
                 if (minimiumBalance > transaction.getBalance()) {
                     minimiumBalance = transaction.getBalance();

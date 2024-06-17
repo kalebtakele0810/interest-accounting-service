@@ -1,9 +1,6 @@
 package et.kacha.interestcalculating.scheduled_tasks;
 
-import et.kacha.interestcalculating.constants.ChargeRate;
-import et.kacha.interestcalculating.constants.ChargeState;
-import et.kacha.interestcalculating.constants.InterestCompType;
-import et.kacha.interestcalculating.constants.InterestPaymentState;
+import et.kacha.interestcalculating.constants.*;
 import et.kacha.interestcalculating.entity.*;
 import et.kacha.interestcalculating.repository.*;
 import et.kacha.interestcalculating.util.CalenderUtil;
@@ -35,11 +32,12 @@ public class InterestDeductionsCalculator {
 
     private final InterestTaxHistoryRepository interestTaxHistoryRepository;
 
-    //    @Scheduled(cron = "0 0 1 * * *", zone = "GMT+3")
+    @Scheduled(cron = "0 07 0 * * *", zone = "GMT+3")
     public void searchCharges() {
 
         log.info("Deduction service processing started.");
 
+//        LocalDate currentDate = LocalDate.now();
         LocalDate currentDate = LocalDate.now().minusDays(1);
 
         LocalDate lastDayOfMonth = new CalenderUtil().getLastDayOfMonth(currentDate);
@@ -114,7 +112,8 @@ public class InterestDeductionsCalculator {
 
     private double calculateCharges(Products product, double baseInterest, InterestHistory interestHistory) {
         double chargesSum = 0;
-        List<Charge> charges = chargesRepository.findByProductsIdAndStatus(product.getId(), ChargeState.ACTIVE);
+        List<Charge> charges = chargesRepository.findByProductsIdAndStatusAndChargeFor(product.getId(), ChargeState.ACTIVE, ChargeFor.MAF);
+//        List<Charge> charges = chargesRepository.findByProductsIdAndStatus(product.getId(), ChargeState.ACTIVE);
 //      List<Charge> charges = chargesRepository.findByProductsIdAndStatus(product.getId(), "Interest", ChargeState.ACTIVE, ChargeState.ACTIVE);
 
         for (Charge charge : charges) {
