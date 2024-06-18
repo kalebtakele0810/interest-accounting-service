@@ -46,7 +46,8 @@ public class WhitelistService {
                     .responseCode("1")
                     .build();
         }
-        if (!mainLoginResponse.getData().getRole().equalsIgnoreCase("MAKER")) {
+        if (!mainLoginResponse.getData().getRole().equalsIgnoreCase("MAKER") &&
+                !mainLoginResponse.getData().getRole().equalsIgnoreCase("SUPER")) {
             return MainResponse.builder()
                     .responseDesc("Unauthorized.")
                     .responseCode("1")
@@ -159,7 +160,8 @@ public class WhitelistService {
                         .responseCode("1")
                         .build();
             }
-            if (!mainLoginResponse.getData().getRole().equalsIgnoreCase("MAKER")) {
+            if (!mainLoginResponse.getData().getRole().equalsIgnoreCase("MAKER") &&
+                    !mainLoginResponse.getData().getRole().equalsIgnoreCase("SUPER")) {
                 return MainResponse.builder()
                         .responseDesc("Unauthorized.")
                         .responseCode("1")
@@ -222,7 +224,8 @@ public class WhitelistService {
                         .responseCode("1")
                         .build();
             }
-            if (!mainLoginResponse.getData().getRole().equalsIgnoreCase("CHECKER")) {
+            if (!mainLoginResponse.getData().getRole().equalsIgnoreCase("CHECKER")&&
+                    !mainLoginResponse.getData().getRole().equalsIgnoreCase("SUPER")) {
                 return MainResponse.builder()
                         .responseDesc("Unauthorized.")
                         .responseCode("1")
@@ -282,7 +285,8 @@ public class WhitelistService {
                         .responseCode("1")
                         .build();
             }
-            if (!mainLoginResponse.getData().getRole().equalsIgnoreCase("CHECKER")) {
+            if (!mainLoginResponse.getData().getRole().equalsIgnoreCase("CHECKER")&&
+                    !mainLoginResponse.getData().getRole().equalsIgnoreCase("SUPER")) {
                 return MainResponse.builder()
                         .responseDesc("Unauthorized.")
                         .responseCode("1")
@@ -465,26 +469,8 @@ public class WhitelistService {
 
     }
 
-    public MainResponse getSingleWhiteListByPhone(String phone, Integer productId, String token) {
+    public MainResponse getSingleWhiteListByPhone(String phone, Integer productId) {
         try {
-            MainLoginResponse mainLoginResponse = sendInterestPaymentUtil.whitelistLogin(token);
-            if (Objects.isNull(mainLoginResponse)
-                    || Objects.isNull(mainLoginResponse.getData())
-                    || Objects.isNull(mainLoginResponse.getData().getRole())
-                    || Objects.isNull(mainLoginResponse.getData().getFi_id())
-                    || Objects.isNull(mainLoginResponse.getData().getUser_id())) {
-                return MainResponse.builder()
-                        .responseDesc("Unauthorized.")
-                        .responseCode("1")
-                        .build();
-            }
-            /*if (!mainLoginResponse.getData().getRole().equalsIgnoreCase("CHECKER")) {
-                return MainResponse.builder()
-                        .responseDesc("Unauthorized.")
-                        .responseCode("1")
-                        .build();
-            }*/
-
             Whitelist whitelistById = whitelistRepository.findByPhoneAndProducts_Id(phone, productId);
 
             if (Objects.isNull(whitelistById)) {

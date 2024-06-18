@@ -206,14 +206,13 @@ public class WhitelistController {
 
 
     @GetMapping("/check")
-    MainResponse getSingleWhiteListByPhone(@RequestParam String phone, @RequestParam Integer productId, @RequestHeader("Authorization") String authorization) {
+    MainResponse getSingleWhiteListByPhone(@RequestParam String phone, @RequestParam Integer productId) {
         try {
 
-            String token = authorization.split(" ")[1];
 
             log.info("Fetch whitelist request by phone | {}", phone);
 
-            MainResponse rsp = whitelistService.getSingleWhiteListByPhone(phone, productId,token);
+            MainResponse rsp = whitelistService.getSingleWhiteListByPhone(phone, productId);
 
             log.info("Fetch whitelist by phone response | {}", new ObjectMapper().writeValueAsString(rsp));
 
